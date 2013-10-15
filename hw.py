@@ -4,10 +4,11 @@ from subprocess import Popen, PIPE
 import sys
 
 scenarios = [("5 add 5", "10"), ("5 div 0", "error"), ("4 mod 2","0"), ("2 sub 1", "1"), ("12 mod 0", "error"), ("10 mul 10", "100")]
-
+#TODO ^ This should be in a YAML/JSON file
 
 directory = "."
 homework_name = "homework_3"
+#TODO ^ Those should be arguments (argparse)
 num_of_hw = 0
 
 for root, dirs, files in os.walk(directory, topdown=False):
