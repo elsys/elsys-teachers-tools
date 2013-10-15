@@ -17,7 +17,7 @@ for root, dirs, files in os.walk(directory, topdown=False):
         files = [ f for f in listdir(root) if (path.isfile(path.join(root,f)) and f.endswith(".c")) ]
         
         if not files:
-            sys.stdout.write("No .c files in dir\n")
+            print "\tNo .c files in dir"
             continue
         
         for current_file in files:
@@ -26,7 +26,7 @@ for root, dirs, files in os.walk(directory, topdown=False):
             result = os.system("gcc {0} -o {1} 2> /dev/null".format(abs_path, exec_path)) #silence
 #TODO change os.system with Popen and communicate (like below)
             if result is not 0:
-                sys.stdout.write(" Files can't compile (gcc err code: {0})\n".format(result))
+                print "\tFiles can't compile (gcc err code: {0})".format(result)
                 continue
 
             successful = True
