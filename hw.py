@@ -2,14 +2,20 @@ import os
 from os import path, listdir
 from subprocess import Popen, PIPE
 import sys
+from datetime import datetime
 
-scenarios = [("5 add 5", "10"), ("5 div 0", "error"), ("4 mod 2","0"), ("2 sub 1", "1"), ("12 mod 0", "error"), ("10 mul 10", "100")]
+scenarios = [("5 add 5", "10"), ("5 div 0", "error"), ("4 mod 2","0"), ("2 sub 1", "1"), ("12 mod 0", "error"), ("10 mul 10", "100"), 
+("asd asd asd as", "error"), ("12 qwe 3", "error"), ("add 5 5","error")]
 #TODO ^ This should be in a YAML/JSON file
 
 directory = "."
 homework_name = "homework_3"
 #TODO ^ Those should be arguments (argparse)
 num_of_hw = 0
+
+silence_gcc = True
+
+print datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 for root, dirs, files in os.walk(directory, topdown=False):
     if os.path.basename(root).lower() == homework_name.lower():
@@ -22,9 +28,11 @@ for root, dirs, files in os.walk(directory, topdown=False):
         
         for current_file in files:
             abs_path = path.abspath(path.join(root,current_file))
-            exec_path = path.abspath(path.join(root, "a.out")) 
-            result = os.system("gcc {0} -o {1} 2> /dev/null".format(abs_path, exec_path)) #silence
-#TODO change os.system with Popen and communicate (like below)
+            exec_path = path.abspath(path.join(root, "a.out"))
+            gcc_invoke =  "gcc {0} -o {1}".format(abs_path, exec_path)
+            if silence_gcc:
+                gcc_invoke += " 2> /dev/null"
+            result = os.system(gcc_invoke)
             if result is not 0:
                 print "\tFiles can't compile (gcc err code: {0})".format(result)
                 continue
