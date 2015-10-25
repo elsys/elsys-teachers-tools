@@ -5,9 +5,6 @@ import sys
 from datetime import datetime
 import yaml
 
-#the first arg is input data, the second is output data
-scenarios = [("","")]
-
 #get dir name of the files that will be complied and run - files should be: task1.c, task2.c, ..
 stream = open("data.yaml", "r")
 doc = yaml.load(stream)
