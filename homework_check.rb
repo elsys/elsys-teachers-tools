@@ -1,4 +1,4 @@
-path = ENV['ELSYS_HOMEWORK'] || ARGV[0] || "/home/tsvetelina/elsys/po-homework/2015-2016/G/03/"
+path = ENV['ELSYS_HOMEWORK'] || ARGV[0]
 homewok = ARGV[1] || "02"
 Dir["#{path}#{homewok}/*.c"].each do |file|
 	# p file
