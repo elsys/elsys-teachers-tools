@@ -5,11 +5,15 @@ import sys
 from datetime import datetime
 import yaml
 
+print(sys.argv)
 #get dir name of the files that will be complied and run - files should be: task1.c, task2.c, ..
 stream = open("data.yaml", "r")
 doc = yaml.load(stream)
-directory = doc["directory_of_homework"] + doc["folder_of_student"]
-
+directory = doc["directory_of_homework"] + sys.argv[1] + "/" + sys.argv[2] + "/" + sys.argv[3]
+print(directory)
+# sys.argv[1] - klass
+# sys.argv[2] - nomer
+# sys.argv[3] - nomer na domasho
 #get input and out data
 stream = open("scenarios.yaml", "r")
 scenarios = yaml.load(stream)
@@ -30,7 +34,7 @@ for root, dirs, files in os.walk(directory, topdown=False):
         abs_path = path.abspath(path.join(directory, current_file))
         exec_path = path.abspath(path.join(directory, "a.out"))
 
-        gpp_invoke = "gcc -Wall -pedantic {0} -o {1} 2> homeworks_result.txt".format(abs_path, exec_path)        
+        gpp_invoke = "gcc -Wall {0} -o {1} 2> homeworks_result.txt".format(abs_path, exec_path)        
             
         result = os.system(gpp_invoke)
 
@@ -46,7 +50,7 @@ for root, dirs, files in os.walk(directory, topdown=False):
             continue
 
         successful = True
-
+        num_of_hw = 0
         scenario = current_file.split('.')[0]
         if scenario in scenarios.keys():
             for i in range(scenarios[scenario]["number_of_tests"]):
