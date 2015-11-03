@@ -15,8 +15,9 @@ print(directory)
 # sys.argv[2] - nomer
 # sys.argv[3] - nomer na domasho
 #get input and out data
-stream = open("scenarios.yaml", "r")
+stream = open("scenarios_" + sys.argv[3] + ".yaml", "r")
 scenarios = yaml.load(stream)
+tasks = scenarios["tasks"]
 
 num_of_hw = 0
 
@@ -24,13 +25,13 @@ print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 for root, dirs, files in os.walk(directory, topdown=False):
     files = [f for f in listdir(root) if (path.isfile(path.join(root, f))
-             and f.endswith(".c"))]
-    
+             and f in tasks)]
     if not files:
         print("\tNo files with 'c' extenstion in dir")
         continue
 
     for current_file in files:
+        print("Will check {0}".format(current_file))
         abs_path = path.abspath(path.join(directory, current_file))
         exec_path = path.abspath(path.join(directory, "a.out"))
 
@@ -61,7 +62,7 @@ for root, dirs, files in os.walk(directory, topdown=False):
                 output = std_out_data.decode('latin-1').rstrip('\n').replace('\0', '').strip()
                 output = output.replace('\n', ' ')
                 sys.stdout.write("\t")
-                
+
                 if output == scenarios[scenario]["output{0}".format(i+1)]:
                     sys.stdout.write(" ".join(" {0} success".format(scenario)
                        .split()))
