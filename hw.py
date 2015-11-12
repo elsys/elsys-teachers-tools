@@ -40,7 +40,7 @@ def check_homework(tasks, scenarios):
 			abs_path = path.abspath(path.join(directory, current_file))
 			exec_path = path.abspath(path.join(directory, "a.out"))
 
-			gpp_invoke = "gcc -Wall {0} -o {1} 2> homeworks_result.txt".format(abs_path, exec_path)        
+			gpp_invoke = "gcc -Wall -pedantic -std=c11 {0} -o {1} 2> homeworks_result.txt".format(abs_path, exec_path)        
 				
 			result = os.system(gpp_invoke)
 
