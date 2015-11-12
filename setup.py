@@ -114,7 +114,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'sample=sample:main',
+            'evaluator=elsys_tools.homework.evaluator:main',
         ],
     },
 )

@@ -3,23 +3,46 @@ from os import path, listdir
 from subprocess import Popen, PIPE
 import sys
 import yaml
+import argparse
 import re
 from .timeout import timeout
 
-stream = open("data.yaml", "r")
-doc = yaml.load(stream)
-directory = doc["directory_of_homework"] + sys.argv[1] + "/" + sys.argv[2] + "/" + sys.argv[3]
 
-if sys.argv[4] == "all":
-    stream = open("scenarios_" + sys.argv[3] + ".yaml", "r")
-    scenarios = yaml.load(stream)
-    tasks = scenarios["tasks"]
-else:
-    tasks = ["task{0}.c".format(sys.argv[4])]
-    number_of_task = re.findall(r'\d', sys.argv[4])[0]
-    scenarios = {"task{0}".format(sys.argv[4]): {"number_of_tests": 1, "input{0}".format(number_of_task): sys.argv[5], "output{0}".format(number_of_task): sys.argv[6]}}
+class readable_dir(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        prospective_dir = values
+        if not os.path.isdir(prospective_dir):
+            raise argparse.ArgumentTypeError("readable_dir:{0} is not a valid path".format(prospective_dir))
+        if os.access(prospective_dir, os.R_OK):
+            setattr(namespace, self.dest, prospective_dir)
+        else:
+            raise argparse.ArgumentTypeError("readable_dir:{0} is not a readable dir".format(prospective_dir))
 
-summary = {}
+
+def main():
+    parser = argparse.ArgumentParser(description='Evaluating of student\'s homework')
+    parser.add_argument('directory', help='directory to use', action='store')
+    parser.add_argument('testcases', help='test cases file to use', type=argparse.FileType('w'))
+    print(parser.parse_args())
+
+if __name__ == "__main__":
+    main()
+
+
+# stream = open("data.yaml", "r")
+# doc = yaml.load(stream)
+# directory = doc["directory_of_homework"] + sys.argv[1] + "/" + sys.argv[2] + "/" + sys.argv[3]
+
+# if sys.argv[4] == "all":
+#     stream = open("scenarios_" + sys.argv[3] + ".yaml", "r")
+#     scenarios = yaml.load(stream)
+#     tasks = scenarios["tasks"]
+# else:
+#     tasks = ["task{0}.c".format(sys.argv[4])]
+#     number_of_task = re.findall(r'\d', sys.argv[4])[0]
+#     scenarios = {"task{0}".format(sys.argv[4]): {"number_of_tests": 1, "input{0}".format(number_of_task): sys.argv[5], "output{0}".format(number_of_task): sys.argv[6]}}
+#
+# summary = {}
 
 
 @timeout(3)
@@ -95,4 +118,4 @@ def check_homework(tasks, scenarios):
         print("\tMissing homework\n")
     return num_of_hw
 
-check_homework(tasks, scenarios)
+# check_homework(tasks, scenarios)
