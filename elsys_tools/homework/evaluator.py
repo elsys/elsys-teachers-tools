@@ -7,6 +7,8 @@ import argparse
 import re
 from .timeout import timeout
 
+TESTCASE_TIMEOUT = 5
+
 
 class readable_dir(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -21,17 +23,14 @@ class readable_dir(argparse.Action):
 
 def main():
     parser = argparse.ArgumentParser(description='Evaluating of student\'s homework')
-    parser.add_argument('directory', help='directory to use', action='store')
+    parser.add_argument('directory', help='student assignment directory to use', action='store')
     parser.add_argument('testcases', help='test cases file to use', type=argparse.FileType('w'))
-    print(parser.parse_args())
+    parser.add_argument('-t', '--tasks', nargs='+', help='List of tasks to evaluate')
+    parser.add_argument('-p', '--parameters', nargs='+', help='List of additional parameters to the compiler')
+    args = parser.parse_args()
 
 if __name__ == "__main__":
     main()
-
-
-# stream = open("data.yaml", "r")
-# doc = yaml.load(stream)
-# directory = doc["directory_of_homework"] + sys.argv[1] + "/" + sys.argv[2] + "/" + sys.argv[3]
 
 # if sys.argv[4] == "all":
 #     stream = open("scenarios_" + sys.argv[3] + ".yaml", "r")
@@ -43,6 +42,23 @@ if __name__ == "__main__":
 #     scenarios = {"task{0}".format(sys.argv[4]): {"number_of_tests": 1, "input{0}".format(number_of_task): sys.argv[5], "output{0}".format(number_of_task): sys.argv[6]}}
 #
 # summary = {}
+
+
+def compile_task():
+    pass
+
+
+def test_task():
+    pass
+
+
+def evaluate_task():
+    pass
+
+
+def evaluate_homework():
+    pass
+
 
 
 @timeout(3)
