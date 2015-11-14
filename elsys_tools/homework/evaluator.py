@@ -24,10 +24,29 @@ class readable_dir(argparse.Action):
 def main():
     parser = argparse.ArgumentParser(description='Evaluating of student\'s homework')
     parser.add_argument('directory', help='student assignment directory to use', action='store')
-    parser.add_argument('testcases', help='test cases file to use', type=argparse.FileType('w'))
+    parser.add_argument('testcases', help='test cases file to use', type=argparse.FileType('r'))
     parser.add_argument('-t', '--tasks', nargs='+', help='List of tasks to evaluate')
     parser.add_argument('-p', '--parameters', nargs='+', help='List of additional parameters to the compiler')
     args = parser.parse_args()
+
+    files = []
+
+    for root, dirs, files in os.walk(args.directory, topdown=False):
+        files = [f for f in listdir(root) if (path.isfile(path.join(root, f)) and f.endswith('.c') or f.endswith('.C'))]
+        if not files:
+            continue
+
+    for current in files:
+        print("\nEvalutaing {0}".format(current))
+        abs_path = path.abspath(path.join(args.directory, current))
+        exec_path = path.abspath(path.join(args.directory, 'a.out'))
+
+        gcc_ivoke = 'gcc -Wall -pedantic -std=c11 {0} -o {1} 2> homeworks_result.txt'.format(abs_path, exec_path)
+        result = os.system(gcc_ivoke)
+
+    with open(args.testcases.name, 'r') as stream:
+        testcases = yaml.load(stream)
+
 
 if __name__ == "__main__":
     main()
