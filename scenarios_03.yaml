@@ -25,8 +25,8 @@ task2:
   output5: ""
 task3:
   number_of_tests: 1
-  input1: "9827AJKQ6345Т"
-  output1: "23456789ТJQKA"
+  input1: "9827AJKQ6345T"
+  output1: "23456789TJQKA"
   input2: ""
   output2: ""
   input3: ""
