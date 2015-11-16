@@ -1,6 +1,8 @@
+#!/usr/bin/python3.4
+
 import os
 from os import path, listdir
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 import sys
 from datetime import datetime
 import yaml
@@ -22,7 +24,6 @@ else:
 
 summary = {}
 
-@timeout(3)
 def check_homework(tasks, scenarios):
 	num_of_hw = 0
 	print("Evaluating homework {0} on student {1} from {2} class\n".format(sys.argv[3], sys.argv[2], sys.argv[1]))
@@ -40,18 +41,20 @@ def check_homework(tasks, scenarios):
 			abs_path = path.abspath(path.join(directory, current_file))
 			exec_path = path.abspath(path.join(directory, "a.out"))
 
-			gpp_invoke = "gcc -Wall -pedantic -std=c11 {0} -o {1} 2> homeworks_result.txt".format(abs_path, exec_path)        
+			gpp_invoke = "gcc -Wall -pedantic -lm -std=c11 {0} -o {1} 1>&2 2> homeworks_result.txt".format(abs_path, exec_path)        
 				
 			result = os.system(gpp_invoke)
 
 			f = open('homeworks_result.txt', 'r')
 			result_of_compilation = f.read()
+			f.close()
 
 			successful = True
 			scenario = current_file.split('.')[0]
 
 			if result is not 0:
-				print("\tFiles can't compile (gcc err code:{0})".format(result))
+				print("\tFiles can't compile (gcc err code:{0})\n".format(result))
+				print("\t{0}".format(result_of_compilation))
 				summary[scenario] = "0/{0} - error".format(scenarios[scenario]["number_of_tests"])
 				continue
 
@@ -67,10 +70,18 @@ def check_homework(tasks, scenarios):
 				for i in range(scenarios[scenario]["number_of_tests"]):
 					p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
 					input_data = scenarios[scenario]["input{0}".format(i+1)]
-					std_out_data, _ = p.communicate(input_data.encode())
+					killed = False
+					try:
+						std_out_data, _ = p.communicate(input_data.encode(), timeout=3)
+					except TimeoutExpired:
+						p.kill()
+						std_out_data, _ = p.communicate()
+						killed = True
 					
 					output = std_out_data.decode('latin-1').rstrip('\n').replace('\0', '').strip()
 					output = output.replace('\n', ' ')
+					if killed:
+						output += "!!!!!TIMEOUT!!!!!"
 					sys.stdout.write("\t")
 
 					if output == scenarios[scenario]["output{0}".format(i+1)]:
@@ -79,9 +90,12 @@ def check_homework(tasks, scenarios):
 						actual_successful_test += 1
 					else:
 						sys.stdout.write("Test {0} failed:\n".format(i+1))
-						sys.stdout.write("\t\tExpected:\n\t\t\t{0}\n".format(scenarios[scenario]["output{0}".format(i+1)]))
-						sys.stdout.write("\t\tGot: \n \t\t\t{0}\n".format(output))
-						successful = False
+						if killed:
+							sys.stdout.write("\t\t{0}".format(output))
+						else:
+							sys.stdout.write("\t\tExpected:\n\t\t\t{0}\n".format(scenarios[scenario]["output{0}".format(i+1)]))
+							sys.stdout.write("\t\tGot: \n \t\t\t{0}\n".format(output))
+							successful = False
 					sys.stdout.write("\n")
 
 					summary[scenario] = "{0}/{1}".format(actual_successful_test, scenarios[scenario]["number_of_tests"])
@@ -90,7 +104,7 @@ def check_homework(tasks, scenarios):
 			
 	print("\nSummary\n")
 	if summary.keys():
-		for task in summary.keys():
+		for task in sorted(summary.keys()):
 			print("\t{0} - {1}".format(task, summary[task]))
 	else:
 		print("\tMissing homework\n")
