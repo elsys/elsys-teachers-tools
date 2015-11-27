@@ -4,7 +4,7 @@ import pytoml as toml
 import argparse
 import re
 
-TESTCASE_TIMEOUT = 5
+TESTCASE_TIMEOUT = 1
 
 
 class readable_dir(argparse.Action):
@@ -39,11 +39,9 @@ def main():
         for current in files:
 
             log.write("## Evaluating {}\n\n".format(current))
-            print("\nEvalutaing {0}".format(current))
 
             if not re.match('(\d\d)_.*', current, flags=0):
-                log.write('### File doesn\'t match naming convention\n\n')
-                print('> File doesn\'t match naming convention\n')
+                log.write('File doesn\'t match naming convention\n\n')
                 continue
 
             abs_path = path.abspath(path.join(args.directory, current))
@@ -54,14 +52,12 @@ def main():
             out, err, code = execute(gcc_invoke)
 
             if code != 0:
-                log.write('### File compiled with error or warnings\n')
+                log.write('**File compiled with error or warnings**\n\n')
                 log.write('```\n')
                 log.write(err.decode())
                 log.write('```\n\n')
-                print('> File compiled with error or warnings\n')
             else:
-                log.write('### File successfully compiled\n'.format(current))
-                print('> File successfully compiled\n')
+                log.write('**File successfully compiled**\n\n'.format(current))
 
             with open(args.testcases.name, 'rb') as stream:
                 testcases = toml.load(stream)
@@ -69,7 +65,32 @@ def main():
                 task = testcases.get('task')[int(current.split('_')[0]) - 1]
 
                 for testcase in task.get('testcase'):
-                    print(testcase)
+                    p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+
+                    try:
+                        std_out_data, _ = p.communicate(input=testcase['input'].encode('utf-8'), timeout=TESTCASE_TIMEOUT)
+
+                        output = std_out_data.decode('latin-1').rstrip('\n').replace('\0', '').strip()
+                        output = output.replace('\n', ' ')
+
+                        if output == testcase['output']:
+                            log.write('Test case {} passed ✔︎ \n'.format(task.get('testcase').index(testcase)))
+                            print('> Test {} passed ✓ \n'.format(task.get('testcase').index(testcase)))
+                        else:
+                            log.write('Test case {} failed ✘ \n'.format(task.get('testcase').index(testcase)))
+                            log.write('\n---\n')
+                            log.write('Expected:\n')
+                            log.write('```\n')
+                            log.write(testcase['output'])
+                            log.write('\n```\n')
+                            log.write('But was:\n')
+                            log.write('```\n')
+                            log.write(output)
+                            log.write('\n```\n')
+                    except TimeoutExpired:
+                        p.kill()
+                        std_out, std_err = p.communicate()
+                        log.write('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
 
 
 def execute(command, input=None, timeout=1):
