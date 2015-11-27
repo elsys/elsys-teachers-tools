@@ -26,7 +26,7 @@ def main():
     parser.add_argument('testcases', help='test cases file to use', type=argparse.FileType('r'))
     parser.add_argument('-t', '--tasks', nargs='+', help='List of tasks to evaluate')
     parser.add_argument('-p', '--parameters', nargs='+', help='List of additional parameters to the compiler')
-    parser.add_argument('-l', '--log', help='Log level')
+    parser.add_argument('-l', '--log', help='Log level. Can be one of the following INFO WARN DEBUG.')
     args = parser.parse_args()
 
     files = []
@@ -95,16 +95,16 @@ def main():
                     p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
                     try:
-                        std_out_data, _ = p.communicate(input=testcase['input'].encode('utf-8'), timeout=TESTCASE_TIMEOUT)
+                        std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
 
                         output = std_out_data.decode('latin-1').rstrip('\n').replace('\0', '').strip()
                         output = output.replace('\n', ' ')
 
                         if output == testcase['output']:
-                            logging.info('Test case {} passed ✔︎ \n'.format(task.get('testcase').index(testcase)))
+                            logging.info('Test case {} passed ✔︎'.format(task.get('testcase').index(testcase)))
                             log.write('Test case {} passed ✔︎ \n'.format(task.get('testcase').index(testcase)))
                         else:
-                            logging.warn('Test case {} failed ✘ \n'.format(task.get('testcase').index(testcase)))
+                            logging.warn('Test case {} failed ✘'.format(task.get('testcase').index(testcase)))
                             logging.debug('Expected: {}'.format(testcase['output']))
                             logging.debug('But was: {}'.format(output))
 
@@ -121,7 +121,7 @@ def main():
                     except TimeoutExpired:
                         p.kill()
                         std_out, std_err = p.communicate()
-                        logging.warn('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
+                        logging.warn('Test case {} timeout 🕐'.format(task.get('testcase').index(testcase)))
                         log.write('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
 
 
