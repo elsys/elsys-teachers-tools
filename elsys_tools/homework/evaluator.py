@@ -67,7 +67,7 @@ def main():
             abs_path = path.abspath(path.join(args.directory, current))
             exec_path = path.abspath(path.join(args.directory, 'a.out'))
 
-            gcc_invoke = 'gcc -Wall -pedantic -std=c11 {0} -o {1}'.format(abs_path, exec_path)
+            gcc_invoke = 'gcc -Wall -pedantic -lm -std=c11 {0} -o {1}'.format(abs_path, exec_path)
             logging.debug(gcc_invoke)
 
             out, err, code = execute(gcc_invoke)
