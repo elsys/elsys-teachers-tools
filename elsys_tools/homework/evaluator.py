@@ -35,7 +35,7 @@ def main():
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
-
+    print(args.directory)
     log_file = path.abspath(path.join(args.directory, 'README.md'))
 
     for root, dirs, files in walk(args.directory, topdown=False):
@@ -59,7 +59,7 @@ def main():
             logging.info('Evaluating {}'.format(current))
             log.write("## Evaluating {}\n\n".format(current))
 
-            if not re.match('(\d\d)_.*', current, flags=0):
+            if not re.match('task(\d).*', current, flags=0):
                 logging.warn('File doesn\'t match naming convention')
                 log.write('File doesn\'t match naming convention\n\n')
                 continue
@@ -67,7 +67,7 @@ def main():
             abs_path = path.abspath(path.join(args.directory, current))
             exec_path = path.abspath(path.join(args.directory, 'a.out'))
 
-            gcc_invoke = 'gcc -Wall -pedantic -lm -std=c11 {0} -o {1}'.format(abs_path, exec_path)
+            gcc_invoke = 'gcc -Wall -lm -std=c11 {0} -o {1}'.format(abs_path, exec_path)
             logging.debug(gcc_invoke)
 
             out, err, code = execute(gcc_invoke)
@@ -85,7 +85,7 @@ def main():
             with open(args.testcases.name, 'rb') as stream:
                 testcases = toml.load(stream)
 
-                task = testcases.get('task')[int(current.split('_')[0]) - 1]
+                task = testcases.get('task')[int(re.match('task(\d).*', current).group(1)) - 1]
 
                 log.write('### Task details:\n')
                 log.write('\nName: {}\n'.format(task['name']))
