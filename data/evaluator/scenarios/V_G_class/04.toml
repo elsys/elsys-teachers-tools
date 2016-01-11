@@ -5,6 +5,7 @@
   [[task.testcase]]
     input = "23242"
     output = "2"
+  [[task.testcase]]
     input = "232454"
     output = "2 4"
 [[task]]
