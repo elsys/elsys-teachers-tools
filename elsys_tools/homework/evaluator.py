@@ -90,7 +90,9 @@ def main():
                 log.write('### Task details:\n')
                 log.write('\nName: {}\n'.format(task['name']))
                 log.write('\nDescription: {}\n'.format(task['desc']))
-
+                log.write('\nPoints: {}\n'.format(task['points']))
+                points = 0
+                success = failed = timeouted = False
                 for testcase in task.get('testcase'):
                     p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
@@ -103,6 +105,7 @@ def main():
                         if output == testcase['output']:
                             logging.info('Test case {} passed ✔︎'.format(task.get('testcase').index(testcase)))
                             log.write('Test case {} passed ✔︎ \n'.format(task.get('testcase').index(testcase)))
+                            success = True
                         else:
                             logging.warn('Test case {} failed ✘'.format(task.get('testcase').index(testcase)))
                             logging.debug('Expected: {}'.format(testcase['output']))
@@ -118,12 +121,19 @@ def main():
                             log.write('```\n')
                             log.write(output)
                             log.write('\n```\n')
+                            failed = True
                     except TimeoutExpired:
                         p.kill()
                         std_out, std_err = p.communicate()
                         logging.warn('Test case {} timeout 🕐'.format(task.get('testcase').index(testcase)))
                         log.write('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
+                        timeouted = True
+                if success:
+                    points = int(task['points'])
+                if (failed or timeouted) and points != 0:
+                    points = int(task['points']) / 2
 
+                log.write('\n Final points are {}\n'.format(points))
 
 def execute(command, input=None, timeout=1):
     proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)

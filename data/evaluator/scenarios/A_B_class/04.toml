@@ -1,6 +1,7 @@
 [[task]]
   name = "is_prime"
   desc = "https://drive.google.com/drive/folders/0B83l5t-0yjU7ZjlDcVZTVnBzLVk"
+  points = 5
   [[task.testcase]]
     input = "3"
     output = "1"
@@ -10,6 +11,7 @@
 [[task]]
   name = "exact_square"
   desc = "https://drive.google.com/drive/folders/0B83l5t-0yjU7ZjlDcVZTVnBzLVk"
+  points = 5
   [[task.testcase]]
     input = "9"
     output = "1"
@@ -19,6 +21,7 @@
 [[task]]
   name = "create_letter_distribution_diagram"
   desc = "https://drive.google.com/drive/folders/0B83l5t-0yjU7ZjlDcVZTVnBzLVk"
+  points = 15
   [[task.testcase]]
     input = "This is a really awesome sentence!"
     output = "e: 6 s: 4 a: 3 i: 2 l: 2 n: 2 t: 2 c: 1 h: 1 m: 1 o: 1 r: 1 w: 1 y: 1 b: 0 d: 0 f: 0 g: 0 j: 0 k: 0 p: 0 q: 0 u: 0 v: 0 x: 0 z: 0"
