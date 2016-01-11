@@ -1,0 +1,20 @@
+[[task]]
+  name = "Digits"
+  desc = "https://docs.google.com/presentation/d/1XxmPMCg7fDMh8XkRo6sjJ47adUxvCwc2l1x0zk2VuvU/edit#slide=id.ge2ff8ea56_0_81"
+  points = 5
+  [[task.testcase]]
+    input = "23242"
+    output = "2"
+  [[task.testcase]]
+    input = "232454"
+    output = "2 4"
+[[task]]
+  name = "Magic square"
+  desc = "https://docs.google.com/presentation/d/1XxmPMCg7fDMh8XkRo6sjJ47adUxvCwc2l1x0zk2VuvU/edit#slide=id.ge2ff8ea56_0_81"
+  points = 5
+  [[task.testcase]]
+    input = "2 7 6 9 5 1 4 3 8"
+    output = "1"
+  [[task.testcases]]
+    input = "2 7 6 9 5 1 4 3 9"
+    output = "0"

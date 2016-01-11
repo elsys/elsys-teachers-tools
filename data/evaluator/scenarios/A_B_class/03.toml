@@ -1,0 +1,34 @@
+[[task]]
+  name = "Triangle"
+  desc = "https://docs.google.com/presentation/d/1PKipJkyZJxG-_6vHuSciKRCL-OHaZD08dPUeGGyyDis/edit#slide=id.ge4ead636d_3_0"
+  points = 5
+  [[task.testcase]]
+    input = "2"
+    output = "* **"
+[[task]]
+  name = "Reverse"
+  desc = "https://docs.google.com/presentation/d/1PKipJkyZJxG-_6vHuSciKRCL-OHaZD08dPUeGGyyDis/edit#slide=id.ge4ead636d_3_0"
+  points = 5
+  [[task.testcase]]
+    input = "Hello"
+    output = "olleH"
+  [[task.testcases]]
+    input = "Kiril e lirik"
+    output = "kiril e liriK"
+[[task]]
+  name = "Cards"
+  desc = "https://docs.google.com/presentation/d/1PKipJkyZJxG-_6vHuSciKRCL-OHaZD08dPUeGGyyDis/edit#slide=id.ge4ead636d_3_0"
+  points = 5
+  [[task.testcase]]
+    input = "9827AJKQ6345Т"
+    output = "23456789ТJQKA"
+[[task]]
+  name = "Roman to Arabic"
+  desc = "https://docs.google.com/presentation/d/1PKipJkyZJxG-_6vHuSciKRCL-OHaZD08dPUeGGyyDis/edit#slide=id.ge4ead636d_3_0"
+  points = 5
+  [[task.testcase]]
+    input = "LXXXVII"
+    output = "87"
+  [[task.testcase]]
+    input = "CCXIX"
+    output = "219"
