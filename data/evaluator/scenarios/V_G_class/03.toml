@@ -4,7 +4,7 @@
   points = 5
   [[task.testcase]]
     input = "2"
-    output = "* **"
+    output = "* ***"
 [[task]]
   name = "Reverse"
   desc = "https://docs.google.com/presentation/d/1PKipJkyZJxG-_6vHuSciKRCL-OHaZD08dPUeGGyyDis/edit#slide=id.ge4ead636d_3_0"
