@@ -1,0 +1,31 @@
+[[task]]
+  name = "Task: colors"
+  desc = "https://docs.google.com/document/d/1B-ZN-pwSB-dur0p8-I6wCR30YU9-cazD3RDD0xIHM-8/edit"
+  points = 10
+  [[task.testcase]]
+    input = "h #4d00e6"
+    output = "rgb(77, 0, 230)"
+  [[task.testcase]]
+    input = "d 251, 255, 77"
+    output = "#fbff4d"
+[[task]]
+  name = "Task: Nokia 3310"
+  desc = "https://docs.google.com/document/d/1B-ZN-pwSB-dur0p8-I6wCR30YU9-cazD3RDD0xIHM-8/edit"
+  points = 5
+  [[task.testcase]]
+    input = "nokia is the best\n"
+    output = "35"
+  [[task.testcases]]
+    input = "did you do your homework\n"
+    output = "49"
+[[task]]
+  name = "Task: Rudolph"
+  desc = "https://docs.google.com/document/d/1B-ZN-pwSB-dur0p8-I6wCR30YU9-cazD3RDD0xIHM-8/edit"
+  points = 15
+  [[task.testcase]]
+    input = "3 1 1 2"
+    output = "2"
+  [[task.testcase]]
+    input = "13 5 2 7 22 4 1 22 5 9 1 7 4 2"
+    output = "9"
+

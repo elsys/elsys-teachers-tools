@@ -35,7 +35,7 @@ def main():
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
-
+    print(args.directory)
     log_file = path.abspath(path.join(args.directory, 'README.md'))
 
     for root, dirs, files in walk(args.directory, topdown=False):
@@ -59,7 +59,7 @@ def main():
             logging.info('Evaluating {}'.format(current))
             log.write("## Evaluating {}\n\n".format(current))
 
-            if not re.match('(\d\d)_.*', current, flags=0):
+            if not re.match('task(\d).*', current, flags=0):
                 logging.warn('File doesn\'t match naming convention')
                 log.write('File doesn\'t match naming convention\n\n')
                 continue
@@ -67,7 +67,7 @@ def main():
             abs_path = path.abspath(path.join(args.directory, current))
             exec_path = path.abspath(path.join(args.directory, 'a.out'))
 
-            gcc_invoke = 'gcc -Wall -pedantic -lm -std=c11 {0} -o {1}'.format(abs_path, exec_path)
+            gcc_invoke = 'gcc -Wall -lm -std=c11 {0} -o {1}'.format(abs_path, exec_path)
             logging.debug(gcc_invoke)
 
             out, err, code = execute(gcc_invoke)
@@ -85,12 +85,14 @@ def main():
             with open(args.testcases.name, 'rb') as stream:
                 testcases = toml.load(stream)
 
-                task = testcases.get('task')[int(current.split('_')[0]) - 1]
+                task = testcases.get('task')[int(re.match('task(\d).*', current).group(1)) - 1]
 
                 log.write('### Task details:\n')
                 log.write('\nName: {}\n'.format(task['name']))
                 log.write('\nDescription: {}\n'.format(task['desc']))
-
+                log.write('\nPoints: {}\n'.format(task['points']))
+                points = 0
+                success = failed = timeouted = False
                 for testcase in task.get('testcase'):
                     p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
@@ -103,6 +105,7 @@ def main():
                         if output == testcase['output']:
                             logging.info('Test case {} passed ✔︎'.format(task.get('testcase').index(testcase)))
                             log.write('Test case {} passed ✔︎ \n'.format(task.get('testcase').index(testcase)))
+                            success = True
                         else:
                             logging.warn('Test case {} failed ✘'.format(task.get('testcase').index(testcase)))
                             logging.debug('Expected: {}'.format(testcase['output']))
@@ -118,12 +121,19 @@ def main():
                             log.write('```\n')
                             log.write(output)
                             log.write('\n```\n')
+                            failed = True
                     except TimeoutExpired:
                         p.kill()
                         std_out, std_err = p.communicate()
                         logging.warn('Test case {} timeout 🕐'.format(task.get('testcase').index(testcase)))
                         log.write('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
+                        timeouted = True
+                if success:
+                    points = int(task['points'])
+                if (failed or timeouted) and points != 0:
+                    points = int(task['points']) / 2
 
+                log.write('\n Final points are {}\n'.format(points))
 
 def execute(command, input=None, timeout=1):
     proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
