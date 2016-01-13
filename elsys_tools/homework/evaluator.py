@@ -82,55 +82,57 @@ def main():
                 logging.info('File successfully compiled')
                 log.write('**File successfully compiled**\n\n'.format(current))
 
-            with open(args.testcases.name, 'rb') as stream:
-                testcases = toml.load(stream)
+                with open(args.testcases.name, 'rb') as stream:
+                    testcases = toml.load(stream)
 
-                task = testcases.get('task')[int(re.match('task(\d).*', current).group(1)) - 1]
+                    task = testcases.get('task')[int(re.match('task(\d).*', current).group(1)) - 1]
 
-                log.write('### Task details\n')
-                log.write('\nName: {}\n'.format(task['name']))
-                log.write('\nDescription: {}\n'.format(task['desc']))
-                log.write('\nPoints: {}\n\n'.format(task['points']))
-                points = 0
-                success = failed = timeouted = False
+                    log.write('### Task details\n')
+                    log.write('\nName: {}\n'.format(task['name']))
+                    log.write('\nDescription: {}\n'.format(task['desc']))
+                    log.write('\nPoints: {}\n\n'.format(task['points']))
+                    points = 0
+                    success = failed = timeouted = False
 
-                log.write('#### Test cases\n')
+                    log.write('#### Test cases\n')
 
-                for testcase in task.get('testcase'):
-                    p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                    for testcase in task.get('testcase'):
+                        try:
+                            p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
-                    try:
-                        std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
+                            std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
 
-                        output = std_out_data.decode('latin-1').rstrip('\n').replace('\0', '').strip()
-                        output = output.replace('\n', ' ')
+                            output = std_out_data.decode('latin-1').rstrip('\n').replace('\0', '').strip()
+                            output = output.replace('\n', ' ')
 
-                        if output == testcase['output']:
-                            logging.info('Test case {} passed ✔︎'.format(task.get('testcase').index(testcase)))
-                            log.write('Test case {} passed ✔︎\n'.format(task.get('testcase').index(testcase)))
-                            success = True
-                        else:
-                            logging.warn('Test case {} failed ✘'.format(task.get('testcase').index(testcase)))
-                            logging.debug('Expected: {}'.format(testcase['output']))
-                            logging.debug('But was: {}'.format(output))
+                            if output == testcase['output']:
+                                logging.info('Test case {} passed ✔︎'.format(task.get('testcase').index(testcase)))
+                                log.write('Test case {} passed ✔︎\n'.format(task.get('testcase').index(testcase)))
+                                success = True
+                            else:
+                                logging.warn('Test case {} failed ✘'.format(task.get('testcase').index(testcase)))
+                                logging.debug('Expected: {}'.format(testcase['output']))
+                                logging.debug('But was: {}'.format(output))
 
-                            log.write('Test case {} failed ✘\n'.format(task.get('testcase').index(testcase)))
-                            log.write('\n---\n')
-                            log.write('Expected:\n')
-                            log.write('```\n')
-                            log.write(testcase['output'])
-                            log.write('\n```\n')
-                            log.write('But was:\n')
-                            log.write('```\n')
-                            log.write(output)
-                            log.write('\n```\n')
-                            failed = True
-                    except TimeoutExpired:
-                        p.kill()
-                        std_out, std_err = p.communicate()
-                        logging.warn('Test case {} timeout 🕐'.format(task.get('testcase').index(testcase)))
-                        log.write('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
-                        timeouted = True
+                                log.write('Test case {} failed ✘\n'.format(task.get('testcase').index(testcase)))
+                                log.write('\n---\n')
+                                log.write('Expected:\n')
+                                log.write('```\n')
+                                log.write(testcase['output'])
+                                log.write('\n```\n')
+                                log.write('But was:\n')
+                                log.write('```\n')
+                                log.write(output)
+                                log.write('\n```\n')
+                                failed = True
+                        except TimeoutExpired:
+                            p.kill()
+                            std_out, std_err = p.communicate()
+                            logging.warn('Test case {} timeout 🕐'.format(task.get('testcase').index(testcase)))
+                            log.write('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
+                            timeouted = True
+                        except (FileNotFoundError, IOError):
+                            pass
                 if success:
                     points = int(task['points'])
                 if (failed or timeouted) and points != 0:
