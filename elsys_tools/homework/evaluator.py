@@ -107,14 +107,14 @@ def main():
 
                         if output == testcase['output']:
                             logging.info('Test case {} passed ✔︎'.format(task.get('testcase').index(testcase)))
-                            log.write('Test case {} passed ✔︎ \n'.format(task.get('testcase').index(testcase)))
+                            log.write('Test case {} passed ✔︎\n'.format(task.get('testcase').index(testcase)))
                             success = True
                         else:
                             logging.warn('Test case {} failed ✘'.format(task.get('testcase').index(testcase)))
                             logging.debug('Expected: {}'.format(testcase['output']))
                             logging.debug('But was: {}'.format(output))
 
-                            log.write('**Test case {} failed ✘ **\n'.format(task.get('testcase').index(testcase)))
+                            log.write('Test case {} failed ✘\n'.format(task.get('testcase').index(testcase)))
                             log.write('\n---\n')
                             log.write('Expected:\n')
                             log.write('```\n')
@@ -136,7 +136,8 @@ def main():
                 if (failed or timeouted) and points != 0:
                     points = int(task['points']) / 2
 
-                log.write('\n **Final points are {}**\n'.format(points))
+                log.write('---')
+                log.write('\n #### Final points: {}\n'.format(points))
 
 
 def execute(command, input=None, timeout=1):
