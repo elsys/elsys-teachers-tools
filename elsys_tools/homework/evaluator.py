@@ -57,7 +57,7 @@ def main():
         for current in files:
 
             logging.info('Evaluating {}'.format(current))
-            log.write("## Evaluating {}\n\n".format(current))
+            log.write("## {}\n\n".format(current))
 
             if not re.match('task(\d).*', current, flags=0):
                 logging.warn('File doesn\'t match naming convention')
@@ -87,12 +87,15 @@ def main():
 
                 task = testcases.get('task')[int(re.match('task(\d).*', current).group(1)) - 1]
 
-                log.write('### Task details:\n')
+                log.write('### Task details\n')
                 log.write('\nName: {}\n'.format(task['name']))
                 log.write('\nDescription: {}\n'.format(task['desc']))
-                log.write('\nPoints: {}\n'.format(task['points']))
+                log.write('\nPoints: {}\n\n'.format(task['points']))
                 points = 0
                 success = failed = timeouted = False
+
+                log.write('#### Test cases\n')
+
                 for testcase in task.get('testcase'):
                     p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
@@ -111,7 +114,7 @@ def main():
                             logging.debug('Expected: {}'.format(testcase['output']))
                             logging.debug('But was: {}'.format(output))
 
-                            log.write('Test case {} failed ✘ \n'.format(task.get('testcase').index(testcase)))
+                            log.write('**Test case {} failed ✘ **\n'.format(task.get('testcase').index(testcase)))
                             log.write('\n---\n')
                             log.write('Expected:\n')
                             log.write('```\n')
@@ -133,7 +136,8 @@ def main():
                 if (failed or timeouted) and points != 0:
                     points = int(task['points']) / 2
 
-                log.write('\n Final points are {}\n'.format(points))
+                log.write('\n **Final points are {}**\n'.format(points))
+
 
 def execute(command, input=None, timeout=1):
     proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
