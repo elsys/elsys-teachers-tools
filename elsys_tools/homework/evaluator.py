@@ -139,8 +139,8 @@ def main():
                 if (failed or timeouted) and points != 0:
                     points = int(task['points']) / 2
 
-                log.write('---')
-                log.write('\n #### Final points: {}\n'.format(points))
+                log.write('--- \n')
+                log.write('#### Final points: {}\n'.format(points))
 
 
 def execute(command, input=None, timeout=1):
