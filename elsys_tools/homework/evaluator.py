@@ -1,4 +1,4 @@
-from os import path, listdir, walk
+from os import path, walk
 from subprocess import Popen, PIPE, TimeoutExpired
 import pytoml as toml
 import argparse
