@@ -1,146 +1,235 @@
-from os import path, access, listdir, R_OK, walk
+from os import path, listdir, walk
 from subprocess import Popen, PIPE, TimeoutExpired
 import pytoml as toml
 import argparse
 import logging
 import time
 import re
+from enum import Enum
 
 TESTCASE_TIMEOUT = 1
+GCC_TEMPLATE = 'gcc -Wall -std=c11 -pedantic {0} -o {1} -lm 2>&1'
+FILENAME_TEMPLATES = ('.*task(\d)\.[cC]$', '(\d\d+\d+)_.*\.[cC]$')
 
 
-class readable_dir(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        prospective_dir = values
-        if not path.isdir(prospective_dir):
-            raise argparse.ArgumentTypeError("readable_dir:{0} is not a valid path".format(prospective_dir))
-        if access(prospective_dir, R_OK):
-            setattr(namespace, self.dest, prospective_dir)
-        else:
-            raise argparse.ArgumentTypeError("readable_dir:{0} is not a readable dir".format(prospective_dir))
+class TaskStatus(Enum):
+    SUBMITTED = 1
+    UNSUBMITTED = 0
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Evaluating of student\'s homework')
-    parser.add_argument('directory', help='student assignment directory to use', action='store')
-    parser.add_argument('testcases', help='test cases file to use', type=argparse.FileType('r'))
-    parser.add_argument('-t', '--tasks', nargs='+', help='List of tasks to evaluate')
-    parser.add_argument('-p', '--parameters', nargs='+', help='List of additional parameters to the compiler')
-    parser.add_argument('-l', '--log', help='Log level. Can be one of the following INFO WARN DEBUG.')
-    args = parser.parse_args()
+class ExecutionStatus(Enum):
+    MISMATCH = 1
+    TIMEOUT = 2
+    OTHER = 3
 
-    files = []
 
-    numeric_level = getattr(logging, args.log.upper(), None)
+def get_args():
+    parser = argparse.ArgumentParser(description='Evaluating of student\'s \
+    homework')
+    parser.add_argument(
+        'directory',
+        help='student assignment directory to use',
+        action='store',
+        default=".")
+    parser.add_argument(
+        'testcases',
+        help='test cases file to use',
+        type=argparse.FileType('r'))
+    parser.add_argument('-t', '--tasks', nargs='+', help='List of tasks to \
+    evaluate')
+    parser.add_argument('-p', '--parameters', nargs='+', help='List of \
+    additional parameters to the compiler')
+    parser.add_argument('-l', '--log', default="DEBUG", help='Log level. Can be one of the \
+    follo\wing INFO WARN DEBUG.')
+    return parser.parse_args()
+
+
+def setup_logger(args):
+    numeric_level = getattr(
+        logging,
+        args.log.upper(),
+        "DEBUG"
+    )
+
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
-    print(args.directory)
-    log_file = path.abspath(path.join(args.directory, 'README.md'))
 
-    for root, dirs, files in walk(args.directory, topdown=False):
-        files = [f for f in listdir(root) if (path.isfile(path.join(root, f)) and f.endswith('.c') or f.endswith('.C'))]
-        if not files:
+
+def is_valid_taskname(filename):
+    for regexp_str in FILENAME_TEMPLATES:
+        match = re.match(regexp_str, filename, flags=0)
+        if match:
+            return True
+
+    return False
+
+
+def get_task_number_from_filename(filename):
+    for regexp_str in FILENAME_TEMPLATES:
+        match = re.match(regexp_str, filename, flags=0)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def main():
+    args = get_args()
+
+    setup_logger(args)
+
+    files = []
+    for root, _, filenames in walk(args.directory, topdown=False):
+        files += [
+            (f, path.abspath(path.join(args.directory, f)))
+            for f
+            in filenames
+            if (path.isfile(path.join(root, f)) and
+                (f.endswith('.c') or f.endswith('.C')))
+        ]
+
+    # print(files)
+
+    summary = []
+
+    with open(args.testcases.name, 'rb') as fin:
+        tasks = toml.load(fin)
+
+    completed_tasks = []
+    for current, abs_path in files:
+        task_index = get_task_number_from_filename(current)
+        print(type(task_index))
+        completed_tasks.append(task_index)
+        task = (tasks['task'])[task_index - 1]
+        task["index"] = task_index
+
+        if not is_valid_taskname(current):
+            summary.append({
+                "status": TaskStatus.SUBMITTED,
+                "name_matching": False,
+                "task": task
+            })
             continue
 
+        compiled_name = current.split('.')[0] + ".out"
+        exec_path = path.abspath(path.join(args.directory, compiled_name))
+
+        gcc_invoke = GCC_TEMPLATE.format(abs_path, exec_path)
+
+        out, err, code = execute(gcc_invoke)
+
+        if code != 0:
+            summary.append({
+                "status": TaskStatus.SUBMITTED,
+                "compiled": False,
+                "compiler_exit_code": code,
+                "compiler_message": out.decode('latin-1'),
+                "task": task
+            })
+            continue
+
+        testcases = []
+        for index, testcase in enumerate(task.get('testcase')):
+            try:
+                p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+
+                std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
+
+                output = std_out_data.decode('latin-1') # .rstrip('\n').replace('\0', '').strip()
+                output = output.replace('\n', ' ')
+
+                if output == testcase['output']:
+                    testcases.append({
+                        "index": index + 1,
+                        "success": True
+                    })
+                else:
+                    testcases.append({
+                        "index": index  + 1,
+                        "success": False,
+                        "status": ExecutionStatus.MISMATCH,
+                        "input": testcase["input"],
+                        "output": output,
+                        "expected": testcase["output"],
+                    })
+            except TimeoutExpired:
+                p.kill()
+                std_out, std_err = p.communicate()
+
+                testcases.append({
+                    "index": index + 1,
+                    "success": False,
+                    "status": ExecutionStatus.TIMEOUT,
+                    "input": testcase["input"],
+                })
+            except (FileNotFoundError, IOError):
+                testcases.append({
+                    "index": index + 1,
+                    "success": False,
+                    "status": ExecutionStatus.OTHER,
+                })
+
+        summary.append({
+            "status": TaskStatus.SUBMITTED,
+            "compiled": True,
+            "task": task,
+            "testcases": testcases,
+        })
+
+    for unsubmitted in list(set(range(1, len(tasks['task']))) - set(completed_tasks)):
+        task = tasks['task'][unsubmitted]
+        task["index"] = unsubmitted
+        summary.append({
+            "status": TaskStatus.UNSUBMITTED,
+            "compiled": False,
+            "task": task
+        })
+
+    print_summary(args.directory, summary)
+
+
+def print_summary(directory, summary):
+    log_file = path.abspath(path.join(directory, 'README.md'))
+    now = time.strftime("%c")
     with open(log_file, 'w') as log:
 
-        now = time.strftime("%c")
+        print("# Assignment report", file=log)
+        print(now, file=log)
 
-        logging.info('Assignment evaluation')
-        logging.info(now)
-        log.write('# Assignment report')
-        log.write('\n---\n')
-        log.write(now)
-        log.write('\n\n')
+        for task in sorted(summary, key=lambda x: x["task"]["index"]):
+            print("## {} (Task {})".format(task["task"]["name"], task["task"]["index"]), file=log)
+            print("{}".format(task["task"]["desc"]), file=log)
+            print("", file=log)
 
-        for current in files:
-
-            logging.info('Evaluating {}'.format(current))
-            log.write("## {}\n\n".format(current))
-
-            if not re.match('task(\d).*', current, flags=0):
-                logging.warn('File doesn\'t match naming convention')
-                log.write('File doesn\'t match naming convention\n\n')
+            if task["status"] is TaskStatus.UNSUBMITTED:
+                print("### Not submitted", file=log)
                 continue
 
-            abs_path = path.abspath(path.join(args.directory, current))
-            exec_path = path.abspath(path.join(args.directory, 'a.out'))
+            if not task["compiled"]:
+                print("Failed compiling", file=log)
+                print("", file=log)
+                print("Exit code: {}".format(task["compiler_exit_code"]), file=log)
+                print("", file=log)
+                print("Error\n```\n{}\n```\n".format(task["compiler_message"]), file=log)
+                print("", file=log)
+                continue
 
-            gcc_invoke = 'gcc -Wall -std=c11 -pedantic {0} -o {1} -lm'.format(abs_path, exec_path)
-            logging.debug(gcc_invoke)
+            for testcase in task["testcases"]:
+                print("### Testcase {} ".format(testcase["index"]), end="", file=log)
 
-            out, err, code = execute(gcc_invoke)
+                if testcase["success"]:
+                    print("passed", file=log)
+                    continue
 
-            if code != 0:
-                logging.warn('File compiled with error or warnings')
-                log.write('**File compiled with error or warnings**\n\n')
-                log.write('```\n')
-                log.write(err.decode())
-                log.write('```\n\n')
-            else:
-                logging.info('File successfully compiled')
-                log.write('**File successfully compiled**\n\n'.format(current))
-
-                with open(args.testcases.name, 'rb') as stream:
-                    testcases = toml.load(stream)
-
-                    task = testcases.get('task')[int(re.match('task(\d).*', current).group(1)) - 1]
-
-                    log.write('### Task details\n')
-                    log.write('\nName: {}\n'.format(task['name']))
-                    log.write('\nDescription: {}\n'.format(task['desc']))
-                    log.write('\nPoints: {}\n\n'.format(task['points']))
-                    points = 0
-                    success = failed = timeouted = False
-
-                    log.write('#### Test cases\n')
-
-                    for testcase in task.get('testcase'):
-                        try:
-                            p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
-
-                            std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
-
-                            output = std_out_data.decode('latin-1').rstrip('\n').replace('\0', '').strip()
-                            output = output.replace('\n', ' ')
-
-                            if output == testcase['output']:
-                                logging.info('Test case {} passed ✔︎'.format(task.get('testcase').index(testcase)))
-                                log.write('Test case {} passed ✔︎\n'.format(task.get('testcase').index(testcase)))
-                                success = True
-                            else:
-                                logging.warn('Test case {} failed ✘'.format(task.get('testcase').index(testcase)))
-                                logging.debug('Expected: {}'.format(testcase['output']))
-                                logging.debug('But was: {}'.format(output))
-
-                                log.write('Test case {} failed ✘\n'.format(task.get('testcase').index(testcase)))
-                                log.write('\n---\n')
-                                log.write('Expected:\n')
-                                log.write('```\n')
-                                log.write(testcase['output'])
-                                log.write('\n```\n')
-                                log.write('But was:\n')
-                                log.write('```\n')
-                                log.write(output)
-                                log.write('\n```\n')
-                                failed = True
-                        except TimeoutExpired:
-                            p.kill()
-                            std_out, std_err = p.communicate()
-                            logging.warn('Test case {} timeout 🕐'.format(task.get('testcase').index(testcase)))
-                            log.write('Test case {} timeout 🕐\n'.format(task.get('testcase').index(testcase)))
-                            timeouted = True
-                        except (FileNotFoundError, IOError):
-                            pass
-
-                if success:
-                    points = int(task['points'])
-                if (failed or timeouted) and points != 0:
-                    points = int(task['points']) / 2
-
-                log.write('--- \n')
-                log.write('#### Final points: {}\n'.format(points))
+                print("failed", file=log)
+                if testcase["status"] is ExecutionStatus.MISMATCH:
+                    print("Input\n```\n{}\n```\n".format(testcase["input"]), file=log)
+                    print("", file=log)
+                    print("Expected\n```\n{}\n```\n".format(testcase["expected"]), file=log)
+                    print("", file=log)
+                    print("Output\n```\n{}\n```\n".format(testcase["output"]), file=log)
+                elif testcase["status"] is ExecutionStatus.TIMEOUT:
+                    print("Execution took more than {} seconds".format(TESTCASE_TIMEOUT), file=log)
 
 
 def execute(command, input=None, timeout=1):
