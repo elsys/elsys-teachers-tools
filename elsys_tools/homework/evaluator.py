@@ -98,15 +98,22 @@ def main():
     completed_tasks = []
     for current, abs_path in files:
         task_index = get_task_number_from_filename(current)
-        print(type(task_index))
-        completed_tasks.append(task_index)
-        task = (tasks['task'])[task_index - 1]
-        task["index"] = task_index
+
+        if task_index is not None:
+            completed_tasks.append(task_index)
+            task = (tasks['task'])[task_index - 1]
+            task["index"] = task_index
+        else:
+            task = {}
+            task['name'] = 'Unrecognized'
+            task['desc'] = "File name doesn't not match any of filenames conventions"
+            task['index'] = -1
 
         if not is_valid_taskname(current):
             summary.append({
                 "status": TaskStatus.SUBMITTED,
                 "name_matching": False,
+                "file_name": current,
                 "task": task
             })
             continue
@@ -135,7 +142,7 @@ def main():
 
                 std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
 
-                output = std_out_data.decode('latin-1') # .rstrip('\n').replace('\0', '').strip()
+                output = std_out_data.decode('latin-1')  # .rstrip('\n').replace('\0', '').strip()
                 output = output.replace('\n', ' ')
 
                 if output == testcase['output']:
@@ -145,7 +152,7 @@ def main():
                     })
                 else:
                     testcases.append({
-                        "index": index  + 1,
+                        "index": index + 1,
                         "success": False,
                         "status": ExecutionStatus.MISMATCH,
                         "input": testcase["input"],
@@ -200,6 +207,10 @@ def print_summary(directory, summary):
             print("## {} (Task {})".format(task["task"]["name"], task["task"]["index"]), file=log)
             print("{}".format(task["task"]["desc"]), file=log)
             print("", file=log)
+
+            if 'name_matching' in task:
+                print("**Filename: {}**".format(task['file_name']), file=log)
+                continue
 
             if task["status"] is TaskStatus.UNSUBMITTED:
                 print("### Not submitted", file=log)
