@@ -1,25 +1,35 @@
 #!/bin/bash
-# Go to the class folder where you can see the folder for every student and execute this script with the homework you want and the class letter
 
-HOMEWORK=$1
-HOME_DIR=/Volumes/Data/elsys # Update home dir to match your dir for elsys-teacher-tools
-EVALUATOR=$HOME_DIR/elsys-teachers-tools/elsys_tools/homework/evaluator.py
-testCaseDir=$HOME_DIR/elsys-teachers-tools/data/evaluator/scenarios
+TEACHER_TOOLS_DIR=$1
+PO_HW_DIR=$2
+CLASS_LETTER=$3
+HOMEWORK_NO=$4
+EVALUATOR=$1/elsys_tools/homework/evaluator.py
+TEST_CASE_DIR=$1/data/evaluator/scenarios
 
-if [ "$2" == "A" -o "$2" == "B" ]; then
-	testCaseDir=$testCaseDir/A_B_class
+if [ -z "$TEACHER_TOOLS_DIR" -o -z "$PO_HW_DIR" -o -z "$CLASS_LETTER" -o -z "$HOMEWORK_NO" ]; then
+	echo "Not all arguments supplied"
+	echo "Example usage of the program: "
+	echo "		./eval.sh /Volumes/Data/elsys/elsys-teachers-tools /Volumes/Data/elsys/po-homework V 05"
+	exit 1 
 fi
 
-if [ "$2" == 'V' -o "$2" == 'G' ]; then
-	testCaseDir=$testCaseDir/V_G_class
+if [ "$CLASS_LETTER" == "A" -o "$CLASS_LETTER" == "B" ]; then
+	TEST_CASE_DIR=$TEST_CASE_DIR/A_B_class
 fi
 
-testCaseDir=$testCaseDir/$1.toml
+if [ "$CLASS_LETTER" == 'V' -o "$CLASS_LETTER" == 'G' ]; then
+	TEST_CASE_DIR=$TEST_CASE_DIR/V_G_class
+fi
+
+TEST_CASE_DIR=$TEST_CASE_DIR/$HOMEWORK_NO.toml
+
+cd $PO_HW_DIR/2015-2016/$CLASS_LETTER/
 
 for i in $( ls ); do
-	if [ -d "$i/$HOMEWORK" ]; then
-		cd $i/$HOMEWORK
-		python $EVALUATOR . $testCaseDir -l DEBUG	
+	if [ -d "$i/$HOMEWORK_NO" ]; then
+		cd $i/$HOMEWORK_NO
+		python $EVALUATOR . $TEST_CASE_DIR -l DEBUG
 		cd ../..
 	fi
 done
