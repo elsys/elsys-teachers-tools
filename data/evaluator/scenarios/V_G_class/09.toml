@@ -1,0 +1,31 @@
+[[task]]
+    name = "Task: Bit in Number"
+    points = 5
+    desc = "https://drive.google.com/file/d/0B2l9LHqQLEIUcG1nYTZrdXI0ckU/view"
+    [[task.testcase]]
+        input = "2 8"
+        output = "0"
+    [[task.testcase]]
+        input = "7 173"
+        output = "1"
+[[task]]
+    name = "Task: Change Bit in Number"
+    points = 5
+    desc = "https://drive.google.com/file/d/0B2l9LHqQLEIUcG1nYTZrdXI0ckU/view"
+    [[task.testcase]]
+        input = "35 0 5"
+        output = "3"
+    [[task.testcases]]
+        input = "35 1 2"
+        output = "39"
+[[task]]
+    name = "Task: Hex Palindrome"
+    desc = "https://drive.google.com/file/d/0B2l9LHqQLEIUcG1nYTZrdXI0ckU/view"
+    points = 10
+    [[task.testcase]]
+        input = "20"
+        output = "22"
+    [[task.testcase]]
+        input = "2570"
+        output = "A0A" 
+
