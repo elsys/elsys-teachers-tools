@@ -41,6 +41,10 @@ def get_args():
     additional parameters to the compiler')
     parser.add_argument('-l', '--log', default="DEBUG", help='Log level. Can be one of the \
     follo\wing INFO WARN DEBUG.')
+    parser.add_argument('--timestamp', dest="timestamp", action='store_true')
+    parser.add_argument('--no-timestamp', dest="timestamp",
+                        action='store_false')
+    parser.set_defaults(timestamp=False)
     return parser.parse_args()
 
 
@@ -192,16 +196,17 @@ def main():
             "task": task
         })
 
-    print_summary(args.directory, summary)
+    print_summary(args, summary)
 
 
-def print_summary(directory, summary):
-    log_file = path.abspath(path.join(directory, 'README.md'))
+def print_summary(args, summary):
+    log_file = path.abspath(path.join(args.directory, 'README.md'))
     now = time.strftime("%c")
     with open(log_file, 'w') as log:
 
         print("# Assignment report", file=log)
-        print(now, file=log)
+        if args.timestamp:
+            print(now, file=log)
 
         for task in sorted(summary, key=lambda x: x["task"]["index"]):
             print("## {} (Task {})".format(task["task"]["name"], task["task"]["index"]), file=log)
