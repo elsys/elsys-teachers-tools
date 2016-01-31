@@ -31,15 +31,15 @@ do
     currEvalHomework=$LAST_HW_NO
     cd $CURR_DIR/$PO_HW_DIR/$letter
     
-    for i in $( ls ); do
-        currEvalHomework=$LAST_HW_NO
-        for hw in `seq 0 2`; # This passes 3 times - 0, 1, 2
-        do
-            hwPath="$( printf "%02d/%02d" $((10#$i)) $((10#$currEvalHomework)))"
-            if [ -d "$hwPath" ]; then
-                python $EVALUATOR $hwPath $TEST_CASE_DIR -l DEBUG
-            fi
-            currEvalHomework=$((currEvalHomework-1))
+    for hw in `seq 0 2`; # This passes 3 times - 0, 1, 2
+    do
+        for i in $( ls ); do
+            hwPath="$( printf "%02d/%02d" $((10#$currEvalHomework)) $((10#$i)))" 
+            echo $hwPath    
+            #if [ -d "$hwPath" ]; then
+                #python $EVALUATOR $hwPath $TEST_CASE_DIR -l DEBUG
+            #fi
         done
+        currEvalHomework=$((currEvalHomework-1))
     done
 done
