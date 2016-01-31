@@ -1,18 +1,21 @@
 elsys-teachers-tools
 ====================
 
-## Using eval.sh to evaluate homeworks of a whole class
+## Using eval.sh to evaluate last homeworks for all classes
 
-### eval.sh takes 4 input parameters
-  - The absolute path to the elsys-teachers-tools repository
-  - The absolute path to the po-homework repository
-  - The class letter - either A, B, V or G
-  - The homework number - integer number
+### eval.sh takes 3 input parameters
+  - The path(absolute or relative to the script) to the elsys-teachers-tools repository
+  - The path(absolute or relative to the script) to the po-homework repository
+  - The last homework number - integer number
     - For numbers below 10 you should prefix with 0 as in 05 for example
 
 ### Example usage of the eval.sh script
   ```
-  $ ./eval.sh /Volumes/Data/elsys/elsys-teachers-tools /Volumes/Data/elsys/po-homework V 05
+  $ ./eval.sh /Volumes/Data/elsys/elsys-teachers-tools /Volumes/Data/elsys/po-homework 05
+  ```
+or
+  ```
+  $ ./eval.sh . ../po-homework 05
   ```
 
 ## Using evaluator to evaluate single student
