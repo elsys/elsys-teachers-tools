@@ -24,12 +24,9 @@ fi
 
 TEST_CASE_DIR=$TEST_CASE_DIR/$HOMEWORK_NO.toml
 
-cd $PO_HW_DIR/2015-2016/$CLASS_LETTER/
-
 for i in $( ls ); do
 	if [ -d "$i/$HOMEWORK_NO" ]; then
-		cd $i/$HOMEWORK_NO
+        cd $PO_HW_DIR/2015-2016/$CLASS_LETTER/$i/$HOMEWORK_NO
 		python $EVALUATOR . $TEST_CASE_DIR -l DEBUG
-		cd ../..
 	fi
 done
