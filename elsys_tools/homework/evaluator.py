@@ -146,8 +146,8 @@ def main():
 
                 std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
 
-                output = std_out_data.decode('latin-1')  # .rstrip('\n').replace('\0', '').strip()
-                output = output.replace('\n', ' ')
+                output = std_out_data.decode('latin-1') or ""
+                output = output.replace('\n', ' ').strip()
 
                 if output == testcase['output']:
                     testcases.append({
