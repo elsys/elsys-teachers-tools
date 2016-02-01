@@ -36,11 +36,11 @@ def get_args():
         help='test cases file to use',
         type=argparse.FileType('r'))
     parser.add_argument('-t', '--tasks', nargs='+', help='List of tasks to \
-    evaluate')
+        evaluate')
     parser.add_argument('-p', '--parameters', nargs='+', help='List of \
-    additional parameters to the compiler')
-    parser.add_argument('-l', '--log', default="DEBUG", help='Log level. Can be one of the \
-    follo\wing INFO WARN DEBUG.')
+        additional parameters to the compiler')
+    parser.add_argument('-l', '--log', default="DEBUG", help='Log level. Can \
+        be one of the follo\wing INFO WARN DEBUG.')
     parser.add_argument('--timestamp', dest="timestamp", action='store_true')
     parser.add_argument('--no-timestamp', dest="timestamp",
                         action='store_false')
@@ -209,7 +209,7 @@ def print_summary(args, summary):
             print(now, file=log)
 
         for task in sorted(summary, key=lambda x: x["task"]["index"]):
-            print("## {} (Task {})".format(task["task"]["name"], task["task"]["index"]), file=log)
+            print("## Task {}: {} ".format(task["task"]["index"], task["task"]["name"]), file=log)
             print("{}".format(task["task"]["desc"]), file=log)
             print("", file=log)
 
