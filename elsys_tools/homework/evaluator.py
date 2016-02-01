@@ -199,17 +199,35 @@ def main():
     print_summary(args, summary)
 
 
+def get_total_points(summary):
+    return sum(map(lambda x: x['task']['points'], summary))
+
+
+def get_earned_points(summary):
+    result = 0
+    for task in summary:
+        correct = (
+            sum(map(lambda x: x["success"], task["testcases"])) == len(task["testcases"])
+        )
+        if correct:
+            result += task['task']['points']
+    return result
+
+
 def print_summary(args, summary):
     log_file = path.abspath(path.join(args.directory, 'README.md'))
     now = time.strftime("%c")
     with open(log_file, 'w') as log:
 
         print("# Assignment report", file=log)
+        print("Points earned: {}".format(get_earned_points(summary)), file=log)
+        print("", file=log)
+        print("Maximum points: {}".format(get_total_points(summary)), file=log)
         if args.timestamp:
             print(now, file=log)
 
         for task in sorted(summary, key=lambda x: x["task"]["index"]):
-            print("## Task {}: {} ".format(task["task"]["index"], task["task"]["name"]), file=log)
+            print("## Task {}: {} [{} points]".format(task["task"]["index"], task["task"]["name"], task["task"]["points"]), file=log)
             print("{}".format(task["task"]["desc"]), file=log)
             print("", file=log)
 
