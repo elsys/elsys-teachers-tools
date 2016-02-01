@@ -95,32 +95,27 @@ def main():
     # print(files)
 
     summary = []
+    unrecognized_files = []
 
     with open(args.testcases.name, 'rb') as fin:
         tasks = toml.load(fin)
 
     completed_tasks = []
+    tasks_count = len(tasks['task'])
     for current, abs_path in files:
         task_index = get_task_number_from_filename(current)
 
-        if task_index is not None:
-            completed_tasks.append(task_index)
-            task = (tasks['task'])[task_index - 1]
-            task["index"] = task_index
-        else:
-            task = {}
-            task['name'] = 'Unrecognized'
-            task['desc'] = "File name doesn't not match any of filenames conventions"
-            task['index'] = -1
-
-        if not is_valid_taskname(current):
-            summary.append({
-                "status": TaskStatus.SUBMITTED,
-                "name_matching": False,
-                "file_name": current,
-                "task": task
+        if (task_index is None or
+                task_index > tasks_count or
+                task_index <= 0):
+            unrecognized_files.append({
+                "name": current
             })
             continue
+
+        completed_tasks.append(task_index)
+        task = (tasks['task'])[task_index - 1]
+        task["index"] = task_index
 
         compiled_name = current.split('.')[0] + ".out"
         exec_path = path.abspath(path.join(args.directory, compiled_name))
@@ -187,8 +182,8 @@ def main():
             "testcases": testcases,
         })
 
-    for unsubmitted in list(set(range(1, len(tasks['task']))) - set(completed_tasks)):
-        task = tasks['task'][unsubmitted]
+    for unsubmitted in get_unsubmitted_tasks(completed_tasks, tasks["task"]):
+        task = tasks['task'][unsubmitted - 1]
         task["index"] = unsubmitted
         summary.append({
             "status": TaskStatus.UNSUBMITTED,
@@ -196,7 +191,11 @@ def main():
             "task": task
         })
 
-    print_summary(args, summary)
+    print_summary(args, summary, unrecognized_files)
+
+
+def get_unsubmitted_tasks(completed_tasks, all_tasks):
+    return list(set(range(1, len(all_tasks))) - set(completed_tasks))
 
 
 def get_total_points(summary):
@@ -206,6 +205,8 @@ def get_total_points(summary):
 def get_earned_points(summary):
     result = 0
     for task in summary:
+        if task.get("testcases") is None:
+            continue
         correct = (
             sum(map(lambda x: x["success"], task["testcases"])) == len(task["testcases"])
         )
@@ -214,56 +215,78 @@ def get_earned_points(summary):
     return result
 
 
-def print_summary(args, summary):
+def print_as_code(text, log):
+    print("```\n{}\n```".format(text), file=log)
+
+
+def print_testcase_summary(testcase, log):
+    print("### Testcase {} ".format(testcase["index"]), end="", file=log)
+
+    if testcase["success"]:
+        print("passed", file=log)
+        return
+
+    print("failed", file=log)
+    if testcase["status"] is ExecutionStatus.MISMATCH:
+        print("Input", file=log)
+        print_as_code(testcase["input"], log)
+        print("", file=log)
+        print("Expected", file=log)
+        print_as_code(testcase["expected"], log)
+        print("", file=log)
+        print("Output", file=log)
+        print_as_code(testcase["output"], log)
+    elif testcase["status"] is ExecutionStatus.TIMEOUT:
+        print("Execution took more than {} seconds".format(TESTCASE_TIMEOUT), file=log)
+
+
+def print_task_summary(task, log):
+    print("## Task {}: {} [{} points]".format(task["task"]["index"], task["task"]["name"], task["task"]["points"]), file=log)
+    print("{}".format(task["task"]["desc"]), file=log)
+    print("", file=log)
+
+    if task["status"] is TaskStatus.UNSUBMITTED:
+        print("### Not submitted", file=log)
+        return
+
+    if not task["compiled"]:
+        print("Failed compiling", file=log)
+        print("", file=log)
+        print("Exit code: {}".format(task["compiler_exit_code"]), file=log)
+        print("", file=log)
+        print("Error", file=log)
+        print_as_code(task["compiler_message"], log)
+        return
+
+    for testcase in task["testcases"]:
+        print_testcase_summary(testcase, log)
+
+
+def print_heading(summary, log, timestamp=False):
+    print("# Assignment report", file=log)
+    print_as_code("Points earned: {}\nMaximum points: {}".format(
+        get_earned_points(summary),
+        get_total_points(summary)
+    ), log)
+
+    if timestamp:
+        now = time.strftime("%c")
+        print(now, file=log)
+
+
+def print_summary(args, summary, unrecognized_files):
     log_file = path.abspath(path.join(args.directory, 'README.md'))
-    now = time.strftime("%c")
     with open(log_file, 'w') as log:
 
-        print("# Assignment report", file=log)
-        print("Points earned: {}".format(get_earned_points(summary)), file=log)
-        print("", file=log)
-        print("Maximum points: {}".format(get_total_points(summary)), file=log)
-        if args.timestamp:
-            print(now, file=log)
-
+        print_heading(summary, log, args.timestamp)
         for task in sorted(summary, key=lambda x: x["task"]["index"]):
-            print("## Task {}: {} [{} points]".format(task["task"]["index"], task["task"]["name"], task["task"]["points"]), file=log)
-            print("{}".format(task["task"]["desc"]), file=log)
-            print("", file=log)
+            print_task_summary(task, log)
 
-            if 'name_matching' in task:
-                print("**Filename: {}**".format(task['file_name']), file=log)
-                continue
+        if len(unrecognized_files) > 0:
+            print("## Unrecognized files", file=log)
 
-            if task["status"] is TaskStatus.UNSUBMITTED:
-                print("### Not submitted", file=log)
-                continue
-
-            if not task["compiled"]:
-                print("Failed compiling", file=log)
-                print("", file=log)
-                print("Exit code: {}".format(task["compiler_exit_code"]), file=log)
-                print("", file=log)
-                print("Error\n```\n{}\n```\n".format(task["compiler_message"]), file=log)
-                print("", file=log)
-                continue
-
-            for testcase in task["testcases"]:
-                print("### Testcase {} ".format(testcase["index"]), end="", file=log)
-
-                if testcase["success"]:
-                    print("passed", file=log)
-                    continue
-
-                print("failed", file=log)
-                if testcase["status"] is ExecutionStatus.MISMATCH:
-                    print("Input\n```\n{}\n```\n".format(testcase["input"]), file=log)
-                    print("", file=log)
-                    print("Expected\n```\n{}\n```\n".format(testcase["expected"]), file=log)
-                    print("", file=log)
-                    print("Output\n```\n{}\n```\n".format(testcase["output"]), file=log)
-                elif testcase["status"] is ExecutionStatus.TIMEOUT:
-                    print("Execution took more than {} seconds".format(TESTCASE_TIMEOUT), file=log)
+        for unrecognized in sorted(unrecognized_files, key=lambda x: x["name"]):
+            print("### {}".format(unrecognized["name"]), file=log)
 
 
 def execute(command, input=None, timeout=1):
