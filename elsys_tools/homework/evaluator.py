@@ -139,7 +139,9 @@ def main():
             try:
                 p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
-                std_out_data, _ = p.communicate(testcase['input'].encode('utf-8'), TESTCASE_TIMEOUT)
+                std_out_data, _ = p.communicate(
+                    testcase['input'].encode('utf-8'),
+                    TESTCASE_TIMEOUT)
 
                 output = std_out_data.decode('latin-1') or ""
                 output = output.replace('\n', ' ').strip()
@@ -207,10 +209,10 @@ def get_earned_points(summary):
     for task in summary:
         if task.get("testcases") is None:
             continue
-        correct = (
-            sum(map(lambda x: x["success"], task["testcases"])) == len(task["testcases"])
-        )
-        if correct:
+
+        correct_tc = sum(testcase["success"] for testcase in task["testcases"])
+
+        if correct_tc == len(task["testcases"]):
             result += task['task']['points']
     return result
 
@@ -237,12 +239,19 @@ def print_testcase_summary(testcase, log):
         print("Output", file=log)
         print_as_code(testcase["output"], log)
     elif testcase["status"] is ExecutionStatus.TIMEOUT:
-        print("Execution took more than {} seconds".format(TESTCASE_TIMEOUT), file=log)
+        print("Execution took more than {} seconds".format(TESTCASE_TIMEOUT),
+              file=log)
 
 
 def print_task_summary(task, log):
-    print("## Task {}: {} [{} points]".format(task["task"]["index"], task["task"]["name"], task["task"]["points"]), file=log)
-    print("{}".format(task["task"]["desc"]), file=log)
+    task_ = task["task"]
+    print(
+        "## Task {}: {} [{} points]".format(
+            task_["index"],
+            task_["name"],
+            task_["points"]),
+        file=log)
+    print("{}".format(task_["desc"]), file=log)
     print("", file=log)
 
     if task["status"] is TaskStatus.UNSUBMITTED:
@@ -264,8 +273,12 @@ def print_task_summary(task, log):
 
 def print_heading(summary, log, timestamp=False):
     print("# Assignment report", file=log)
+    earned_points = get_earned_points(summary)
+
+    print(earned_points)
+
     print_as_code("Points earned: {}\nMaximum points: {}".format(
-        get_earned_points(summary),
+        earned_points,
         get_total_points(summary)
     ), log)
 
@@ -276,17 +289,23 @@ def print_heading(summary, log, timestamp=False):
 
 def print_summary(args, summary, unrecognized_files):
     log_file = path.abspath(path.join(args.directory, 'README.md'))
-    with open(log_file, 'w') as log:
+    try:
+        log = open(log_file, 'w')
+    except FileNotFoundError:
+        print(0)
+        return
 
-        print_heading(summary, log, args.timestamp)
-        for task in sorted(summary, key=lambda x: x["task"]["index"]):
-            print_task_summary(task, log)
+    print_heading(summary, log, args.timestamp)
+    for task in sorted(summary, key=lambda x: x["task"]["index"]):
+        print_task_summary(task, log)
 
-        if len(unrecognized_files) > 0:
-            print("## Unrecognized files", file=log)
+    if len(unrecognized_files) > 0:
+        print("## Unrecognized files", file=log)
 
-        for unrecognized in sorted(unrecognized_files, key=lambda x: x["name"]):
-            print("### {}".format(unrecognized["name"]), file=log)
+    for unrecognized in sorted(unrecognized_files, key=lambda x: x["name"]):
+        print("### {}".format(unrecognized["name"]), file=log)
+
+    log.close()
 
 
 def execute(command, input=None, timeout=1):
