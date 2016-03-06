@@ -44,7 +44,11 @@ def get_args():
     parser.add_argument('--timestamp', dest="timestamp", action='store_true')
     parser.add_argument('--no-timestamp', dest="timestamp",
                         action='store_false')
-    parser.set_defaults(timestamp=False)
+    parser.add_argument('--failed-output', dest="failed_output",
+                        action="store_true")
+    parser.add_argument('--no-failed-output', dest="failed_output",
+                        action="store_false")
+    parser.set_defaults(timestamp=False, failed_output=False)
     return parser.parse_args()
 
 
@@ -221,7 +225,7 @@ def print_as_code(text, log):
     print("```\n{}\n```".format(text), file=log)
 
 
-def print_testcase_summary(testcase, log):
+def print_testcase_summary(args, testcase, log):
     print("### Testcase {} ".format(testcase["index"]), end="", file=log)
 
     if testcase["success"]:
@@ -229,7 +233,7 @@ def print_testcase_summary(testcase, log):
         return
 
     print("failed", file=log)
-    if testcase["status"] is ExecutionStatus.MISMATCH:
+    if args.failed_output and testcase["status"] is ExecutionStatus.MISMATCH:
         print("Input", file=log)
         print_as_code(testcase["input"], log)
         print("", file=log)
@@ -243,7 +247,7 @@ def print_testcase_summary(testcase, log):
               file=log)
 
 
-def print_task_summary(task, log):
+def print_task_summary(args, task, log):
     task_ = task["task"]
     print(
         "## Task {}: {} [{} points]".format(
@@ -268,7 +272,7 @@ def print_task_summary(task, log):
         return
 
     for testcase in task["testcases"]:
-        print_testcase_summary(testcase, log)
+        print_testcase_summary(args, testcase, log)
 
 
 def print_heading(summary, log, timestamp=False):
@@ -297,7 +301,7 @@ def print_summary(args, summary, unrecognized_files):
 
     print_heading(summary, log, args.timestamp)
     for task in sorted(summary, key=lambda x: x["task"]["index"]):
-        print_task_summary(task, log)
+        print_task_summary(args, task, log)
 
     if len(unrecognized_files) > 0:
         print("## Unrecognized files", file=log)
