@@ -33,13 +33,18 @@ do
     
     for hw in `seq 0 2`; # This passes 3 times - 0, 1, 2
     do
-        for i in $( ls ); do
+
+        for i in `seq 1 29`;
+        do
             hwPath="$( printf "%02d/%02d" $((10#$currEvalHomework)) $((10#$i)))" 
-            echo $hwPath    
-            #if [ -d "$hwPath" ]; then
-                #python $EVALUATOR $hwPath $TEST_CASE_DIR -l DEBUG
-            #fi
+            #echo $hwPath
+            if [ -d "$hwPath" ]; then
+                python $EVALUATOR $hwPath $TEST_CASE_DIR -l DEBUG
+            fi
         done
         currEvalHomework=$((currEvalHomework-1))
+        if [ $currEvalHomework -lt 1 ]; then
+            break
+        fi
     done
 done
