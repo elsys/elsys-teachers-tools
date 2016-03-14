@@ -1,0 +1,33 @@
+[[task]]
+  name = "Hash"
+  desc = "https://github.com/elsys/po-homework/tree/master/B/01#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-1"
+  points = 5
+  [[task.testcase]]
+    input = "tovaeprimerenvhod"
+    output = "16512"
+  [[task.testcase]]
+    input = "thisisaverylongstring"
+    output = "25405"
+  [[task.testcase]]
+    input = ""
+    output = "42"
+[[task]]
+  name = "Occurances"
+  desc = "https://github.com/elsys/po-homework/tree/master/B/01#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-2"
+  points = 7
+  [[task.testcase]]
+    input = "do you even yaml bro rofl vsmisal"
+    output = "2 1116"
+  [[task.testcase]]
+    input = "this is one hell of a testcase kzz myz nzy vsmisal"
+    output = "3 759"
+  [[task.testcase]]
+    input = "What if there is no spoon vsmisal"
+    output = "1 1092"
+[[task]]
+  name = "Collisions"
+  desc = "https://github.com/elsys/po-homework/tree/master/B/01#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-3"
+  points = 7
+  [[task.testcase]]
+    input = "what if for some reason there are may collision in this test case but no one ever tests to see if there are any and only gets the last four words vzz xyz yzy zxz"
+    output = "708 for may 722 but any 770 vzz xyz yzy zxz"
