@@ -31,3 +31,6 @@
   [[task.testcase]]
     input = "what if for some reason there are may collision in this test case but no one ever tests to see if there are any and only gets the last four words vzz xyz yzy zxz"
     output = "708 for may 722 but any 770 vzz xyz yzy zxz"
+  [[task.testcase]]
+    input = "asd asd asd asd vzz xyz yzy zxz"
+    output = "770 vzz xyz yzy zxz"
