@@ -9,11 +9,9 @@ EVALUATOR=$CURR_DIR/$TEACHER_TOOLS_DIR/elsys_tools/homework/evaluator.py
 BASE_TEST_CASE_DIR=$CURR_DIR/$TEACHER_TOOLS_DIR/data/evaluator/scenarios
 ONLY_ONE_HW=$4
 
-if [ -z "$ONLY_ONE_HW"]; then
+if [ -z "$ONLY_ONE_HW" ]; then
     ONLY_ONE_HW=0
 fi
-
-echo $ONLY_ONE_HW
 
 if [ -z "$TEACHER_TOOLS_DIR" -o -z "$PO_HW_DIR" -o -z "$LAST_HW_NO" ]; then
 	echo "Not all arguments supplied"
