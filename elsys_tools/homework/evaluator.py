@@ -9,7 +9,7 @@ import shlex
 from enum import Enum
 
 TESTCASE_TIMEOUT = 1
-GCC_TEMPLATE = 'gcc -Wall -std=c11 -pedantic "{0}" -o "{1}" -lm'
+GCC_TEMPLATE = 'gcc -Wall -std=c11 -pedantic {0} -o {1} -lm'
 FILENAME_TEMPLATES = ('.*task(\d)\.[cC]$', '(\d\d+\d+)_.*\.[cC]$')
 
 
@@ -125,7 +125,7 @@ def main():
         compiled_name = current.split('.')[0] + ".out"
         exec_path = path.abspath(path.join(args.directory, compiled_name))
 
-        gcc_invoke = GCC_TEMPLATE.format(abs_path, exec_path)
+        gcc_invoke = GCC_TEMPLATE.format(shlex.quote(abs_path), shlex.quote(exec_path))
 
         out, err, code = execute(gcc_invoke, timeout=10)
         msg = out + err
