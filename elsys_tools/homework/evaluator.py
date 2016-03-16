@@ -5,10 +5,11 @@ import argparse
 import logging
 import time
 import re
+import shlex
 from enum import Enum
 
 TESTCASE_TIMEOUT = 1
-GCC_TEMPLATE = 'gcc -Wall -std=c11 -pedantic {0} -o {1} -lm 2>&1'
+GCC_TEMPLATE = 'gcc -Wall -std=c11 -pedantic "{0}" -o "{1}" -lm'
 FILENAME_TEMPLATES = ('.*task(\d)\.[cC]$', '(\d\d+\d+)_.*\.[cC]$')
 
 
@@ -126,14 +127,15 @@ def main():
 
         gcc_invoke = GCC_TEMPLATE.format(abs_path, exec_path)
 
-        out, err, code = execute(gcc_invoke)
+        out, err, code = execute(gcc_invoke, timeout=10)
+        msg = out + err
 
         if code != 0:
             summary.append({
                 "status": TaskStatus.SUBMITTED,
                 "compiled": False,
                 "compiler_exit_code": code,
-                "compiler_message": out.decode('latin-1'),
+                "compiler_message": msg.decode('latin-1'),
                 "task": task
             })
             continue
@@ -312,8 +314,8 @@ def print_summary(args, summary, unrecognized_files):
     log.close()
 
 
-def execute(command, input=None, timeout=1):
-    proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+def execute(commandline, input=None, timeout=1):
+    proc = Popen(shlex.split(commandline), stdout=PIPE, stderr=PIPE)
 
     try:
         std_out, std_err = proc.communicate(timeout=timeout, input=input)
