@@ -8,6 +8,7 @@ import logging
 import time
 import re
 import shlex
+import math
 from enum import Enum
 
 TESTCASE_TIMEOUT = 1
@@ -227,8 +228,9 @@ def get_earned_points(summary):
 
         correct_tc = sum(testcase["success"] for testcase in task["testcases"])
 
-        if correct_tc == len(task["testcases"]):
-            result += task['task']['points']
+        points = task['task']['points'] * \
+            float(correct_tc) / len(task["testcases"])
+        result += math.ceil(points)
     return result
 
 
