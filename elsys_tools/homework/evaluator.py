@@ -127,7 +127,8 @@ def main():
         compiled_name = current.split('.')[0] + ".out"
         exec_path = path.abspath(path.join(args.directory, compiled_name))
 
-        gcc_invoke = GCC_TEMPLATE.format(shlex.quote(abs_path), shlex.quote(exec_path))
+        gcc_invoke = GCC_TEMPLATE.format(shlex.quote(abs_path),
+                                         shlex.quote(exec_path))
 
         out, err, code = execute(gcc_invoke, timeout=10)
         msg = out + err
@@ -205,7 +206,7 @@ def main():
 
 
 def get_unsubmitted_tasks(completed_tasks, all_tasks):
-    return list(set(range(1, len(all_tasks))) - set(completed_tasks))
+    return list(set(range(1, len(all_tasks) + 1)) - set(completed_tasks))
 
 
 def get_total_points(summary):
@@ -253,6 +254,7 @@ def print_testcase_summary(args, testcase, log):
 
 def print_task_summary(args, task, log):
     task_ = task["task"]
+    print(file=log)
     print(
         "## Task {}: {} [{} points]".format(
             task_["index"],
