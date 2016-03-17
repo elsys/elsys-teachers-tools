@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from os import path, walk
+import os
 from subprocess import Popen, PIPE, TimeoutExpired
 import pytoml as toml
 import argparse
@@ -84,18 +84,22 @@ def get_task_number_from_filename(filename):
     return None
 
 
+def remove_path_from_output(folder, output):
+    return output.replace(folder + os.sep, "")
+
+
 def main():
     args = get_args()
 
     setup_logger(args)
 
     files = []
-    for root, _, filenames in walk(args.directory, topdown=False):
+    for root, _, filenames in os.walk(args.directory, topdown=False):
         files += [
-            (f, path.abspath(path.join(args.directory, f)))
+            (f, os.path.abspath(os.path.join(args.directory, f)))
             for f
             in filenames
-            if (path.isfile(path.join(root, f)) and
+            if (os.path.isfile(os.path.join(root, f)) and
                 (f.endswith('.c') or f.endswith('.C')))
         ]
 
@@ -125,7 +129,8 @@ def main():
         task["index"] = task_index
 
         compiled_name = current.split('.')[0] + ".out"
-        exec_path = path.abspath(path.join(args.directory, compiled_name))
+        exec_path = os.path.abspath(
+            os.path.join(args.directory, compiled_name))
 
         gcc_invoke = GCC_TEMPLATE.format(shlex.quote(abs_path),
                                          shlex.quote(exec_path))
@@ -138,7 +143,8 @@ def main():
                 "status": TaskStatus.SUBMITTED,
                 "compiled": False,
                 "compiler_exit_code": code,
-                "compiler_message": msg.decode('latin-1'),
+                "compiler_message": remove_path_from_output(
+                    os.path.abspath(args.directory), msg.decode('latin-1')),
                 "task": task
             })
             continue
@@ -298,7 +304,7 @@ def print_heading(summary, log, timestamp=False):
 
 
 def print_summary(args, summary, unrecognized_files):
-    log_file = path.abspath(path.join(args.directory, 'README.md'))
+    log_file = os.path.abspath(os.path.join(args.directory, 'README.md'))
     try:
         log = open(log_file, 'w')
     except FileNotFoundError:
