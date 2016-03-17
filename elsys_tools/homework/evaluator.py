@@ -139,7 +139,7 @@ def main():
         out, err, code = execute(gcc_invoke, timeout=10)
         msg = out + err
 
-        if code != 0:
+        if code != 0 or err != b'':
             summary.append({
                 "status": TaskStatus.SUBMITTED,
                 "compiled": False,
@@ -153,44 +153,42 @@ def main():
         testcases = []
         for index, testcase in enumerate(task.get('testcase')):
             try:
-                p = Popen([exec_path], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                (stdout, stderr, exitcode) = \
+                    execute(exec_path,
+                            input=testcase['input'].encode('utf-8'))
+            except (FileNotFoundError, IOError, Exception):
+                # print("EXCEPTION:", str(e))
+                testcases.append({
+                    "index": index + 1,
+                    "success": False,
+                    "status": ExecutionStatus.OTHER,
+                })
+                continue
 
-                std_out_data, _ = p.communicate(
-                    testcase['input'].encode('utf-8'),
-                    TESTCASE_TIMEOUT)
-
-                output = std_out_data.decode('latin-1') or ""
-                output = output.replace('\n', ' ').strip()
-
-                if output == testcase['output']:
-                    testcases.append({
-                        "index": index + 1,
-                        "success": True
-                    })
-                else:
-                    testcases.append({
-                        "index": index + 1,
-                        "success": False,
-                        "status": ExecutionStatus.MISMATCH,
-                        "input": testcase["input"],
-                        "output": output,
-                        "expected": testcase["output"],
-                    })
-            except TimeoutExpired:
-                p.kill()
-                std_out, std_err = p.communicate()
-
+            output = stdout.decode('latin-1') or ""
+            output = output.replace('\n', ' ').strip()
+            if exitcode != 0:
                 testcases.append({
                     "index": index + 1,
                     "success": False,
                     "status": ExecutionStatus.TIMEOUT,
                     "input": testcase["input"],
                 })
-            except (FileNotFoundError, IOError):
+                continue
+
+            if output == testcase['output']:
+                testcases.append({
+                    "index": index + 1,
+                    "success": True
+                })
+            else:
                 testcases.append({
                     "index": index + 1,
                     "success": False,
-                    "status": ExecutionStatus.OTHER,
+                    "status": ExecutionStatus.MISMATCH,
+                    "input": testcase["input"],
+                    "output": output,
+                    "expected": testcase["output"],
                 })
 
         summary.append({
@@ -335,7 +333,8 @@ def print_summary(args, summary, unrecognized_files):
 
 
 def execute(commandline, input=None, timeout=1):
-    proc = Popen(shlex.split(commandline), stdout=PIPE, stderr=PIPE)
+    proc = Popen(shlex.split(commandline), stdin=PIPE,
+                 stdout=PIPE, stderr=PIPE)
 
     try:
         std_out, std_err = proc.communicate(timeout=timeout, input=input)
@@ -343,6 +342,7 @@ def execute(commandline, input=None, timeout=1):
         proc.kill()
         std_out, std_err = proc.communicate()
 
+    # print("execute: ", commandline, std_out, std_err, proc.returncode)
     return (std_out, std_err, proc.returncode)
 
 if __name__ == "__main__":
