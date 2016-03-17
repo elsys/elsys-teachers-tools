@@ -220,17 +220,23 @@ def get_total_points(summary):
     return sum(map(lambda x: x['task']['points'], summary))
 
 
+def get_points_for_task(task):
+    if "testcases" not in task:
+        return 0
+    correct_tc = sum(testcase["success"] for testcase in task["testcases"])
+
+    points = task['task']['points'] * \
+        float(correct_tc) / len(task["testcases"])
+    return math.ceil(points)
+
+
 def get_earned_points(summary):
     result = 0
     for task in summary:
         if task.get("testcases") is None:
             continue
 
-        correct_tc = sum(testcase["success"] for testcase in task["testcases"])
-
-        points = task['task']['points'] * \
-            float(correct_tc) / len(task["testcases"])
-        result += math.ceil(points)
+        result += get_points_for_task(task)
     return result
 
 
@@ -263,10 +269,12 @@ def print_testcase_summary(args, testcase, log):
 def print_task_summary(args, task, log):
     task_ = task["task"]
     print(file=log)
+
     print(
-        "## Task {}: {} [{} points]".format(
+        "## Task {}: {} [{}/{} points]".format(
             task_["index"],
             task_["name"],
+            get_points_for_task(task),
             task_["points"]),
         file=log)
     print("{}".format(task_["desc"]), file=log)
