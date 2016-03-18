@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export LC_CTYPE="C"
+
 CURR_DIR=$( pwd )
 
 TEACHER_TOOLS_DIR=$1
