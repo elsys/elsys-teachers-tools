@@ -139,13 +139,13 @@ def main():
         out, err, code = execute(gcc_invoke, timeout=10)
         msg = out + err
 
-        if code != 0 or err != b'':
+        if code != 0:
             summary.append({
                 "status": TaskStatus.SUBMITTED,
                 "compiled": False,
                 "compiler_exit_code": code,
                 "compiler_message": remove_path_from_output(
-                    os.path.abspath(args.directory), msg.decode('latin-1')),
+                    os.path.abspath(args.directory), msg.decode()),
                 "task": task
             })
             continue
@@ -196,6 +196,8 @@ def main():
             "compiled": True,
             "task": task,
             "testcases": testcases,
+            "compiler_message": remove_path_from_output(
+                os.path.abspath(args.directory), msg.decode())
         })
 
     for unsubmitted in get_unsubmitted_tasks(completed_tasks, tasks["task"]):
@@ -225,6 +227,10 @@ def get_points_for_task(task):
 
     points = task['task']['points'] * \
         float(correct_tc) / len(task["testcases"])
+
+    if task["compiler_message"]:
+        points -= correct_tc
+
     return math.ceil(points)
 
 
@@ -290,6 +296,10 @@ def print_task_summary(args, task, log):
         print("Error", file=log)
         print_as_code(task["compiler_message"], log)
         return
+
+    if task["compiler_message"]:
+        print("Compiled with warning(s)", file=log)
+        print_as_code(task["compiler_message"], log)
 
     for testcase in task["testcases"]:
         print_testcase_summary(args, testcase, log)
