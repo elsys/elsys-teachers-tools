@@ -166,7 +166,7 @@ def main():
                 continue
 
             output = stdout.decode('latin-1') or ""
-            output = output.replace('\n', ' ').strip()
+            output = " ".join([line.strip() for line in output.split('\n')])
             if exitcode != 0:
                 testcases.append({
                     "index": index + 1,
