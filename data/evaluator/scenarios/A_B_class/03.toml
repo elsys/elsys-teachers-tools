@@ -1,0 +1,36 @@
+[[task]]
+  name = "United Peopleses Number"
+  desc = "https://github.com/elsys/po-homework/tree/master/A/03#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-1---united-peopleses-number"
+  points = 7
+  [[task.testcase]]
+    input = "6101047500"
+    output = "1"
+  [[task.testcase]]
+    input = "1642292840"
+    output = "1"
+  [[task.testcase]]
+    input = "1653292840"
+    output = "0"
+  [[task.testcase]]
+    input = "5505046645"
+    output = "0"
+[[task]]
+  name = "Eval"
+  desc = "https://github.com/elsys/po-homework/tree/master/A/03#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-2---eval"
+  points = 12
+  [[task.testcase]]
+    input = "12 + 4"
+    output = "16"
+  [[task.testcase]]
+    input = "a + b"
+    output = "invalid command arguments"
+  [[task.testcase]]
+    input = "12 ++"
+    output = "invalid input"
+  [[task.testcase]]
+    input = "3,14 + 2,71"
+    output = "invalid command arguments"
+  [[task.testcase]]
+    input = "++ 12"
+    output = "13"
+
