@@ -1,0 +1,33 @@
+[[task]]
+  name = "ISBN"
+  desc = "https://github.com/elsys/po-homework/tree/master/A/04#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-1---isbn"
+  points = 5
+  [[task.testcase]]
+    input = "978-1-55583-868-3"
+    output = "1 Alyson Books"
+  [[task.testcase]]
+    input = "978-0-330-25864-7"
+    output = "1"
+  [[task.testcase]]
+    input = "9178-1-55583-868-3"
+    output = "0"
+[[task]]
+  name = "Doors"
+  desc = "https://github.com/elsys/po-homework/tree/master/A/04#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-2---doors"
+  points = 5
+  [[task.testcase]]
+    input = "button_clicked\ncycle_complete\nbutton_clicked\nbutton_clicked\nbutton_clicked\nbutton_clicked\nbutton_clicked\ncycle_complete"
+    output = "Door: CLOSED Door: OPENING Door: OPEN Door: CLOSING Door: STOPPED_WHILE_CLOSING Door: OPENING Door: STOPPED_WHILE_OPENING Door: CLOSING Door: CLOSED"
+[[task]]
+  name = "Digits"
+  desc = "https://github.com/elsys/po-homework/tree/master/A/04#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-3---digits"
+  points = 7
+  [[task.testcase]]
+    input = "2345\n14"
+    output = "2+3+4+5=14"
+  [[task.testcase]]
+    input = "23457\n7"
+    output = "2-3-4+5+7=7 2+3+4+5-7=7"
+  [[task.testcase]]
+    input = "2345\n17"
+    output = "-1"
