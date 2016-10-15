@@ -1,27 +1,40 @@
 [[task]]
-  name = "Minimax"
-  desc = "https://github.com/elsys/po-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-1---%D0%9C%D0%B8%D0%BD%D0%B8%D0%BC%D0%B0%D0%BA%D1%81"
-  points = 7
+  name = "Squares & Cubes"
+  desc = "https://github.com/elsys/c-programming-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-1---squares--cubes"
+  points = 5
   [[task.testcase]]
-    input = "5\n6 3 1 17 -22"
-    output = "-5"
+    input = "10"
+    output = "100\n1000"
+  [[task.testcase]]
+    input = "-2"
+    output = "4\n-8"
 [[task]]
-  name = "Seek & !Destroy"
-  desc = "https://github.com/elsys/po-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-2---seek--destroy"
-  points = 7
+  name = "Biggest of 3"
+  desc = "https://github.com/elsys/c-programming-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-2---biggest-of-3"
+  points = 5
   [[task.testcase]]
-    input = "az sym gencho hybaveca vechniq ergen\ny"
-    output = "4"
+    input = "10.4\n11.5\n12.5"
+    output = "12.5"
 [[task]]
-  name = "Za.io"
-  desc = "https://github.com/elsys/po-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-3---zaio"
-  points = 12
+  name = "Number to Text"
+  desc = "https://github.com/elsys/c-programming-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-3---number-to-text"
+  points = 5
   [[task.testcase]]
-    input = "1 3 3 0 -2 -2"
-    output = "1 5"
+    input = "3"
+    output = "three"
   [[task.testcase]]
-    input = "1 3 2 0 -2 -2"
-    output = "0 50"
+    input = "0"
+    output = "zero"
+[[task]]
+  name = "Symmetric letters"
+  desc = "https://github.com/elsys/c-programming-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-4---symmetric-letters"
+  points = 5
   [[task.testcase]]
-    input = "1 8 2 1 -2 -2"
-    output = "0 2"
+    input = "a"
+    output = "z"
+  [[task.testcase]]
+    input = "g"
+    output = "t"
+  [[task.testcase]]
+    input = "y"
+    output = "b"

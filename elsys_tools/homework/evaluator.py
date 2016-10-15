@@ -13,7 +13,7 @@ from enum import Enum
 
 TESTCASE_TIMEOUT = 1
 GCC_TEMPLATE = 'gcc -Wall -std=c11 -pedantic {0} -o {1} -lm'
-FILENAME_TEMPLATES = ('.*task(\d)\.[cC]$', '(\d\d+\d+)_.*\.[cC]$')
+FILENAME_TEMPLATES = ('.*task(\d+)\.[cC]$', '(\d\d)_.*\.[cC]$')
 
 
 class TaskStatus(Enum):
