@@ -4,10 +4,10 @@
   points = 5
   [[task.testcase]]
     input = "10"
-    output = "100\n1000"
+    output = "100 1000"
   [[task.testcase]]
     input = "-2"
-    output = "4\n-8"
+    output = "4 -8"
 [[task]]
   name = "Biggest of 3"
   desc = "https://github.com/elsys/c-programming-homework/tree/master/A/02#%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0-2---biggest-of-3"
