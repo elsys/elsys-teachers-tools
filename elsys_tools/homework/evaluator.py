@@ -330,11 +330,13 @@ def print_heading(summary, log, timestamp=False):
 def print_summary(args, summary, unrecognized_files, log=None):
     log_file = os.path.abspath(os.path.join(args.directory, 'README.md'))
     try:
+        opened = False
         if not log:
             if args.output_std:
                 log = sys.stdout
             else:
                 log = open(log_file, 'w')
+                opened = True
     except FileNotFoundError:
         print(0)
         return
@@ -349,7 +351,8 @@ def print_summary(args, summary, unrecognized_files, log=None):
     for unrecognized in sorted(unrecognized_files, key=lambda x: x["name"]):
         print("### {}".format(unrecognized["name"]), file=log)
 
-    log.close()
+    if opened:
+        log.close()
 
 
 def execute(commandline, input=None, timeout=1):
