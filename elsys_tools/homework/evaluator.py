@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 from subprocess import Popen, PIPE, TimeoutExpired
 import pytoml as toml
 import argparse
@@ -27,7 +28,7 @@ class ExecutionStatus(Enum):
     OTHER = 3
 
 
-def get_args():
+def get_args(argv):
     parser = argparse.ArgumentParser(description='Evaluating of student\'s \
     homework')
     parser.add_argument(
@@ -53,7 +54,7 @@ def get_args():
     parser.add_argument('--no-failed-output', dest="failed_output",
                         action="store_false")
     parser.set_defaults(timestamp=False, failed_output=False)
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def setup_logger(args):
@@ -89,8 +90,8 @@ def remove_path_from_output(folder, output):
     return output.replace(folder + os.sep, "")
 
 
-def main():
-    args = get_args()
+def main(argv=sys.argv[1:]):
+    args = get_args(argv)
 
     setup_logger(args)
 
