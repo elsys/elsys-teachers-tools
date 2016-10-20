@@ -91,7 +91,7 @@ def remove_path_from_output(folder, output):
     return output.replace(folder + os.sep, "")
 
 
-def main(argv=sys.argv[1:]):
+def main(argv=sys.argv[1:], tasks=None, post_processing=None, log=None):
     args = get_args(argv)
 
     setup_logger(args)
@@ -106,13 +106,12 @@ def main(argv=sys.argv[1:]):
                 (f.endswith('.c') or f.endswith('.C')))
         ]
 
-    # print(files)
-
     summary = []
     unrecognized_files = []
 
-    with open(args.testcases.name, 'rb') as fin:
-        tasks = toml.load(fin)
+    if not tasks:
+        with open(args.testcases.name, 'rb') as fin:
+            tasks = toml.load(fin)
 
     completed_tasks = []
     tasks_count = len(tasks['task'])
@@ -212,7 +211,10 @@ def main(argv=sys.argv[1:]):
             "task": task
         })
 
-    print_summary(args, summary, unrecognized_files)
+    if post_processing:
+        summary = post_processing(summary)
+
+    print_summary(args, summary, unrecognized_files, log)
 
 
 def get_unsubmitted_tasks(completed_tasks, all_tasks):
@@ -325,13 +327,14 @@ def print_heading(summary, log, timestamp=False):
         print(now, file=log)
 
 
-def print_summary(args, summary, unrecognized_files):
+def print_summary(args, summary, unrecognized_files, log=None):
     log_file = os.path.abspath(os.path.join(args.directory, 'README.md'))
     try:
-        if args.output_std:
-            log = sys.stdout
-        else:
-            log = open(log_file, 'w')
+        if not log:
+            if args.output_std:
+                log = sys.stdout
+            else:
+                log = open(log_file, 'w')
     except FileNotFoundError:
         print(0)
         return
