@@ -53,7 +53,8 @@ def get_args(argv):
                         action="store_true")
     parser.add_argument('--no-failed-output', dest="failed_output",
                         action="store_false")
-    parser.set_defaults(timestamp=False, failed_output=False)
+    parser.add_argument('--output-std', dest='output_std', action='store_true')
+    parser.set_defaults(timestamp=False, failed_output=False, output_std=False)
     return parser.parse_args(argv)
 
 
@@ -311,7 +312,8 @@ def print_heading(summary, log, timestamp=False):
     print("# Assignment report", file=log)
     earned_points = get_earned_points(summary)
 
-    print(earned_points)
+    if log is not sys.stdout:
+        print(earned_points)
 
     print_as_code("Points earned: {}\nMaximum points: {}".format(
         earned_points,
@@ -326,7 +328,10 @@ def print_heading(summary, log, timestamp=False):
 def print_summary(args, summary, unrecognized_files):
     log_file = os.path.abspath(os.path.join(args.directory, 'README.md'))
     try:
-        log = open(log_file, 'w')
+        if args.output_std:
+            log = sys.stdout
+        else:
+            log = open(log_file, 'w')
     except FileNotFoundError:
         print(0)
         return
