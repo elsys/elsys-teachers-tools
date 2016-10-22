@@ -115,6 +115,7 @@ def main(argv=sys.argv[1:], tasks=None, post_processing=None, log=None):
 
     completed_tasks = []
     tasks_count = len(tasks['task'])
+    tasks_evaluated = set()
     for current, abs_path in files:
         task_index = get_task_number_from_filename(current)
 
@@ -122,9 +123,20 @@ def main(argv=sys.argv[1:], tasks=None, post_processing=None, log=None):
                 task_index > tasks_count or
                 task_index <= 0):
             unrecognized_files.append({
-                "name": current
+                "name": current,
+                "duplicate": False
             })
             continue
+
+        if task_index in tasks_evaluated:
+            unrecognized_files.append({
+                "name": current,
+                "duplicate": True
+            })
+            continue
+
+        tasks_evaluated.add(task_index)
+        assert(len(tasks_evaluated) <= tasks_count)
 
         completed_tasks.append(task_index)
         task = (tasks['task'])[task_index - 1]
@@ -345,11 +357,26 @@ def print_summary(args, summary, unrecognized_files, log=None):
     for task in sorted(summary, key=lambda x: x["task"]["index"]):
         print_task_summary(args, task, log)
 
-    if len(unrecognized_files) > 0:
-        print("## Unrecognized files", file=log)
+    duplicate_files = sorted(
+        [x for x in unrecognized_files if x["duplicate"]],
+        key=lambda x: x["name"]
+    )
+    unrecognized_files = sorted(
+        [x for x in unrecognized_files if not x["duplicate"]],
+        key=lambda x: x["name"]
+    )
 
-    for unrecognized in sorted(unrecognized_files, key=lambda x: x["name"]):
+    if len(unrecognized_files) > 0:
+        print("", file=log)
+        print("## Unrecognized files", file=log)
+    for unrecognized in unrecognized_files:
         print("### {}".format(unrecognized["name"]), file=log)
+
+    if len(duplicate_files) > 0:
+        print("", file=log)
+        print("## Duplicate entries", file=log)
+    for duplicate in duplicate_files:
+        print("### {}".format(duplicate["name"]), file=log)
 
     if opened:
         log.close()
