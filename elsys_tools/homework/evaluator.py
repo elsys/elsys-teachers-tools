@@ -146,8 +146,11 @@ def main(argv=sys.argv[1:], tasks=None, post_processing=None, log=None):
         exec_path = os.path.abspath(
             os.path.join(args.directory, compiled_name))
 
-        gcc_invoke = GCC_TEMPLATE.format(shlex.quote(abs_path),
-                                         shlex.quote(exec_path))
+        exec_path = shlex.quote(exec_path)
+        abs_path = shlex.quote(abs_path)
+
+        gcc_invoke = GCC_TEMPLATE.format(abs_path,
+                                         exec_path)
 
         out, err, code = execute(gcc_invoke, timeout=10)
         msg = out + err
